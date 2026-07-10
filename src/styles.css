@@ -5,17 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Alemoon design system.
+ * Palette: #EBEFEA #C6CEBC #BCC4BB #A3A4A2 #606160 #0F0F0E
+ * Two typographic voices: Fraunces (display, editorial) and Manrope (body).
  */
 
 @theme inline {
@@ -59,42 +51,52 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: "Fraunces", "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --radius: 0.5rem;
+  /* Alemoon palette in oklch */
+  --alemoon-cream: oklch(0.958 0.005 140);     /* #EBEFEA */
+  --alemoon-sage: oklch(0.833 0.014 138);      /* #C6CEBC */
+  --alemoon-sage-2: oklch(0.798 0.011 138);    /* #BCC4BB */
+  --alemoon-stone: oklch(0.686 0.003 145);     /* #A3A4A2 */
+  --alemoon-charcoal: oklch(0.430 0.003 145);  /* #606160 */
+  --alemoon-ink: oklch(0.148 0.002 145);       /* #0F0F0E */
+
+  --background: var(--alemoon-cream);
+  --foreground: var(--alemoon-ink);
+  --card: oklch(0.985 0.003 140);
+  --card-foreground: var(--alemoon-ink);
+  --popover: oklch(0.985 0.003 140);
+  --popover-foreground: var(--alemoon-ink);
+  --primary: var(--alemoon-ink);
+  --primary-foreground: var(--alemoon-cream);
+  --secondary: var(--alemoon-sage);
+  --secondary-foreground: var(--alemoon-ink);
+  --muted: oklch(0.905 0.008 140);
+  --muted-foreground: var(--alemoon-charcoal);
+  --accent: var(--alemoon-sage-2);
+  --accent-foreground: var(--alemoon-ink);
+  --destructive: oklch(0.55 0.19 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.870 0.010 140);
+  --input: oklch(0.905 0.008 140);
+  --ring: var(--alemoon-charcoal);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: var(--alemoon-cream);
+  --sidebar-foreground: var(--alemoon-ink);
+  --sidebar-primary: var(--alemoon-ink);
+  --sidebar-primary-foreground: var(--alemoon-cream);
+  --sidebar-accent: var(--alemoon-sage);
+  --sidebar-accent-foreground: var(--alemoon-ink);
+  --sidebar-border: oklch(0.870 0.010 140);
+  --sidebar-ring: var(--alemoon-charcoal);
 }
 
 .dark {
@@ -140,5 +142,41 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Big accessible buttons for the admin panel */
+@utility btn-a11y {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 4rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  border: 2px solid transparent;
+  transition: transform 120ms ease, background-color 120ms ease;
+  cursor: pointer;
+}
+@utility btn-a11y-primary {
+  background-color: var(--alemoon-ink);
+  color: var(--alemoon-cream);
+}
+@utility btn-a11y-secondary {
+  background-color: var(--card);
+  color: var(--alemoon-ink);
+  border-color: var(--alemoon-charcoal);
+}
+@utility btn-a11y-danger {
+  background-color: oklch(0.55 0.19 27);
+  color: white;
 }
