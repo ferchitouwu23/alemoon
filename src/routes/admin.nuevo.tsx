@@ -1,13 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  formatPrice,
-  uploadProductImage,
-  type Categoria,
-} from "@/lib/alemoon";
+import { formatPrice, uploadProductImage, type Categoria } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/admin/nuevo")({
   component: NuevoWizard,
@@ -30,47 +26,71 @@ function NuevoWizard() {
     precio: "",
     categoria_id: null,
   });
-  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: cats = [] } = useQuery({
+  const {
+    data: cats = [],
+    isLoading: isLoadingCategorias,
+    isError: isCategoriasError,
+    error: categoriasError,
+    refetch: refetchCategorias,
+  } = useQuery({
     queryKey: ["categorias"],
+    retry: 1,
     queryFn: async (): Promise<Categoria[]> => {
-      const { data } = await supabase.from("categorias").select("id, nombre").order("nombre");
+      const { data, error } = await supabase.from("categorias").select("id, nombre").order("nombre");
+      if (error) throw error;
       return data ?? [];
     },
   });
 
-  async function handleFile(f: File | null) {
-    if (!f) return;
-    setUploading(true);
-    try {
-      const url = await uploadProductImage(f);
-      setDatos((d) => ({ ...d, imagen_url: url }));
-      toast.success("¡Listo! Foto subida.");
-    } catch (e: any) {
-      toast.error(e.message ?? "No se pudo subir la foto");
-    } finally {
-      setUploading(false);
+  const selectedCategoryName = useMemo(
+    () => cats.find((categoria) => categoria.id === datos.categoria_id)?.nombre ?? "sin-categoria",
+    [cats, datos.categoria_id],
+  );
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl("");
+      return;
     }
-  }
+
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
 
   async function guardar() {
+    if (!selectedFile) {
+      toast.error("Debes elegir una foto antes de guardar.");
+      return;
+    }
+
     setSaving(true);
+
     try {
+      const imageUrl = await uploadProductImage(selectedFile, selectedCategoryName);
+
       const { error } = await supabase.from("productos").insert({
         nombre: datos.nombre,
         precio: Number(datos.precio),
-        imagen_url: datos.imagen_url,
+        imagen_url: imageUrl,
         categoria_id: datos.categoria_id,
         visible: true,
       });
+
       if (error) throw error;
+
+      setDatos((current) => ({ ...current, imagen_url: imageUrl }));
       qc.invalidateQueries({ queryKey: ["admin-productos"] });
       qc.invalidateQueries({ queryKey: ["productos-publicos"] });
       setStep(5);
-    } catch (e: any) {
-      toast.error(e.message ?? "No se pudo guardar");
+      toast.success("Producto guardado correctamente.");
+    } catch (error: any) {
+      toast.error(error.message ?? "No se pudo guardar");
     } finally {
       setSaving(false);
     }
@@ -78,8 +98,8 @@ function NuevoWizard() {
 
   const total = 4;
   const canNext =
-    (step === 1 && !!datos.imagen_url) ||
-    (step === 2 && datos.nombre.trim().length > 0) ||
+    (step === 1 && datos.nombre.trim().length > 0) ||
+    (step === 2 && !!selectedFile) ||
     (step === 3 && Number(datos.precio) > 0) ||
     step === 4;
 
@@ -90,7 +110,7 @@ function NuevoWizard() {
           <div className="text-sm uppercase tracking-widest text-muted-foreground">
             Paso {step} de {total}
           </div>
-          <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full bg-primary transition-all"
               style={{ width: `${(step / total) * 100}%` }}
@@ -101,65 +121,100 @@ function NuevoWizard() {
 
       {step === 1 && (
         <section className="space-y-6">
-          <h1 className="font-display text-3xl">Primero, sube una foto</h1>
-          <p className="text-lg text-muted-foreground">
-            Elige una foto clara del producto.
-          </p>
-          <label className="block cursor-pointer">
+          <h1 className="font-display text-3xl">Primero, completa lo básico</h1>
+          <label className="block">
+            <span className="mb-2 block text-lg">¿Cómo se llama este producto?</span>
             <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+              autoFocus
+              value={datos.nombre}
+              onChange={(event) => setDatos({ ...datos, nombre: event.target.value })}
+              placeholder="Ej: Aretes luna dorada"
+              className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-xl focus:border-primary focus:outline-none"
             />
-            <div className="border-4 border-dashed border-border rounded-2xl p-8 text-center bg-card hover:bg-muted transition">
-              {uploading ? (
-                <p className="text-lg">Subiendo...</p>
-              ) : datos.imagen_url ? (
-                <img src={datos.imagen_url} alt="" className="mx-auto max-h-64 rounded-xl" />
-              ) : (
-                <>
-                  <div className="text-6xl">📷</div>
-                  <div className="mt-3 text-lg font-medium">Toca aquí para elegir una foto</div>
-                </>
-              )}
-            </div>
           </label>
+          <label className="block">
+            <span className="mb-2 block text-lg">Categoría</span>
+            <select
+              value={datos.categoria_id ?? ""}
+              disabled={isLoadingCategorias || isCategoriasError}
+              onChange={(event) =>
+                setDatos({ ...datos, categoria_id: event.target.value || null, imagen_url: "" })
+              }
+              className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-xl disabled:opacity-60"
+            >
+              <option value="">
+                {isLoadingCategorias
+                  ? "Cargando categorías..."
+                  : isCategoriasError
+                    ? "No se pudieron cargar las categorías"
+                    : "Sin categoría"}
+              </option>
+              {cats.map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>
+                  {categoria.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {isCategoriasError ? (
+            <div className="rounded-2xl border-2 border-destructive/30 bg-card p-5">
+              <p className="font-medium">Hubo un problema al cargar las categorías.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {getSupabaseErrorMessage(categoriasError)}
+              </p>
+              <button
+                onClick={() => refetchCategorias()}
+                className="btn-a11y btn-a11y-primary mt-4 min-h-12 px-5 text-base"
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          ) : !isLoadingCategorias && cats.length === 0 ? (
+            <div className="rounded-2xl border-2 border-border bg-card p-5 text-sm text-muted-foreground">
+              No se encontraron categorías en la tabla <strong>categorias</strong>. Ahora mismo
+              por eso solo aparece la opción <strong>Sin categoría</strong>.
+            </div>
+          ) : null}
+
+          <p className="text-sm text-muted-foreground">
+            La foto se subirá al bucket <strong>productos</strong> dentro de la carpeta de esta
+            categoría.
+          </p>
         </section>
       )}
 
       {step === 2 && (
         <section className="space-y-6">
-          <h1 className="font-display text-3xl">Ahora, el nombre</h1>
-          <label className="block">
-            <span className="block text-lg mb-2">¿Cómo se llama este producto?</span>
+          <h1 className="font-display text-3xl">Ahora, elige la foto</h1>
+          <p className="text-lg text-muted-foreground">Selecciona una imagen clara del producto.</p>
+          <label className="inline-flex cursor-pointer">
             <input
-              autoFocus
-              value={datos.nombre}
-              onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
-              placeholder="Ej: Aretes luna dorada"
-              className="w-full px-5 py-4 text-xl rounded-xl border-2 border-border bg-card focus:outline-none focus:border-primary"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => {
+                const nextFile = event.target.files?.[0] ?? null;
+                setSelectedFile(nextFile);
+                setDatos((current) => ({ ...current, imagen_url: "" }));
+              }}
             />
+            <span className="btn-a11y btn-a11y-primary min-h-14 px-6 text-lg">Elegir foto</span>
           </label>
-          {cats.length > 0 && (
-            <label className="block">
-              <span className="block text-lg mb-2">Categoría (opcional)</span>
-              <select
-                value={datos.categoria_id ?? ""}
-                onChange={(e) =>
-                  setDatos({ ...datos, categoria_id: e.target.value || null })
-                }
-                className="w-full px-5 py-4 text-xl rounded-xl border-2 border-border bg-card"
-              >
-                <option value="">Sin categoría</option>
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+
+          <div className="rounded-2xl border-2 border-border bg-card p-5">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Vista previa del producto"
+                className="mx-auto max-h-80 rounded-xl object-contain"
+              />
+            ) : (
+              <div className="grid min-h-56 place-items-center rounded-xl border border-dashed border-border bg-background text-center text-muted-foreground">
+                <p>La vista previa aparecerá aquí cuando elijas una foto.</p>
+              </div>
+            )}
+          </div>
         </section>
       )}
 
@@ -167,7 +222,7 @@ function NuevoWizard() {
         <section className="space-y-6">
           <h1 className="font-display text-3xl">Ahora, el precio</h1>
           <label className="block">
-            <span className="block text-lg mb-2">¿Cuánto cuesta? (en dólares)</span>
+            <span className="mb-2 block text-lg">¿Cuánto cuesta? (en dólares)</span>
             <input
               type="number"
               inputMode="decimal"
@@ -175,9 +230,9 @@ function NuevoWizard() {
               step="0.01"
               autoFocus
               value={datos.precio}
-              onChange={(e) => setDatos({ ...datos, precio: e.target.value })}
+              onChange={(event) => setDatos({ ...datos, precio: event.target.value })}
               placeholder="0.00"
-              className="w-full px-5 py-4 text-2xl rounded-xl border-2 border-border bg-card focus:outline-none focus:border-primary"
+              className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-2xl focus:border-primary focus:outline-none"
             />
           </label>
         </section>
@@ -186,13 +241,17 @@ function NuevoWizard() {
       {step === 4 && (
         <section className="space-y-6">
           <h1 className="font-display text-3xl">Confirma y guarda</h1>
-          <div className="bg-card border-2 border-border rounded-2xl p-5 space-y-4">
-            {datos.imagen_url && (
-              <img src={datos.imagen_url} alt="" className="w-full max-h-64 object-contain rounded-xl" />
+          <div className="space-y-4 rounded-2xl border-2 border-border bg-card p-5">
+            {previewUrl && (
+              <img src={previewUrl} alt="" className="max-h-64 w-full rounded-xl object-contain" />
             )}
             <div>
               <div className="text-sm text-muted-foreground">Nombre</div>
               <div className="text-xl font-semibold">{datos.nombre}</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Categoría</div>
+              <div className="text-xl font-semibold">{selectedCategoryName}</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Precio</div>
@@ -203,24 +262,26 @@ function NuevoWizard() {
       )}
 
       {step === 5 && (
-        <section className="text-center py-10 space-y-6">
-          <div className="text-8xl">✅</div>
-          <h1 className="font-display text-3xl">¡Listo! Guardado correctamente.</h1>
+        <section className="space-y-6 py-10 text-center">
+          <div className="text-8xl">OK</div>
+          <h1 className="font-display text-3xl">Listo. Guardado correctamente.</h1>
           <div className="grid gap-3">
             <button
               onClick={() => {
                 setDatos({ imagen_url: "", nombre: "", precio: "", categoria_id: null });
+                setSelectedFile(null);
+                setPreviewUrl("");
                 setStep(1);
               }}
               className="btn-a11y btn-a11y-primary"
             >
-              ➕ Agregar otro
+              Agregar otro
             </button>
             <button
               onClick={() => navigate({ to: "/admin/productos" })}
               className="btn-a11y btn-a11y-secondary"
             >
-              📦 Ver mis productos
+              Ver mis productos
             </button>
           </div>
         </section>
@@ -229,19 +290,19 @@ function NuevoWizard() {
       {step <= total && (
         <div className="grid grid-cols-2 gap-3 pt-4">
           <button
-            disabled={step === 1}
+            disabled={step === 1 || saving}
             onClick={() => setStep(step - 1)}
             className="btn-a11y btn-a11y-secondary disabled:opacity-40"
           >
-            ← Atrás
+            Atrás
           </button>
           {step < total ? (
             <button
-              disabled={!canNext}
+              disabled={!canNext || saving}
               onClick={() => setStep(step + 1)}
               className="btn-a11y btn-a11y-primary disabled:opacity-40"
             >
-              Siguiente →
+              Siguiente
             </button>
           ) : (
             <button
@@ -249,11 +310,22 @@ function NuevoWizard() {
               onClick={guardar}
               className="btn-a11y btn-a11y-primary disabled:opacity-40"
             >
-              {saving ? "Guardando..." : "💾 Guardar"}
+              {saving ? "Guardando..." : "Guardar"}
             </button>
           )}
         </div>
       )}
     </div>
   );
+}
+
+function getSupabaseErrorMessage(error: unknown) {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string" && message.trim().length > 0) {
+      return message;
+    }
+  }
+
+  return "La consulta a la tabla categorias falló.";
 }

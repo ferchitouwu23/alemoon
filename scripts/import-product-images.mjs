@@ -1,13 +1,19 @@
 import fs from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
+const cliArgs = process.argv.slice(2);
 const SOURCE_ROOT =
-  process.argv[2] || "C:\\Users\\USER\\OneDrive\\Desktop\\sitio Alemoon front\\imagenes";
+  cliArgs.find((arg) => !arg.startsWith("--")) ||
+  "C:\\Users\\USER\\OneDrive\\Desktop\\sitio Alemoon front\\imagenes";
 const BUCKET = "productos";
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
 const CATEGORY_NAMES = ["anillos", "aretes", "cadenas", "combos", "pulseras"];
+const ONLY_CATEGORY = getOnlyCategoryArg(cliArgs);
 
 loadEnvFile();
 
@@ -36,9 +42,10 @@ const errors = [];
 
 try {
   await ensureSourceRootExists(SOURCE_ROOT);
-  const categoryMap = await getOrCreateCategories(CATEGORY_NAMES);
+  const categoriesToProcess = ONLY_CATEGORY ? [ONLY_CATEGORY] : CATEGORY_NAMES;
+  const categoryMap = await getOrCreateCategories(categoriesToProcess);
 
-  for (const categoryName of CATEGORY_NAMES) {
+  for (const categoryName of categoriesToProcess) {
     const categoryDir = path.join(SOURCE_ROOT, categoryName);
     const stat = await safeStat(categoryDir);
 
@@ -128,8 +135,26 @@ try {
   process.exit(1);
 }
 
+function getOnlyCategoryArg(args) {
+  const categoryArg = args.find((arg) => arg.startsWith("--solo-categoria="));
+  if (!categoryArg) return null;
+
+  const categoryName = categoryArg.split("=")[1]?.trim().toLowerCase();
+  if (!categoryName) {
+    throw new Error("Debes indicar un nombre en --solo-categoria=<nombre>.");
+  }
+
+  if (!CATEGORY_NAMES.includes(categoryName)) {
+    throw new Error(
+      `La categoria "${categoryName}" no es valida. Usa una de: ${CATEGORY_NAMES.join(", ")}.`,
+    );
+  }
+
+  return categoryName;
+}
+
 function loadEnvFile() {
-  const envPath = path.resolve(".env");
+  const envPath = path.join(PROJECT_ROOT, ".env");
 
   try {
     const envContents = readFileSync(envPath, "utf8");
@@ -236,7 +261,9 @@ function getContentType(extension) {
 function printSummary() {
   console.log("\nResumen de importacion:\n");
 
-  for (const categoryName of CATEGORY_NAMES) {
+  const categoriesToReport = ONLY_CATEGORY ? [ONLY_CATEGORY] : CATEGORY_NAMES;
+
+  for (const categoryName of categoriesToReport) {
     const stats = summary[categoryName];
     console.log(
       `${categoryName}: encontradas=${stats.found}, subidas=${stats.uploaded}, insertadas=${stats.inserted}, omitidas=${stats.skipped}, errores=${stats.errors}`,

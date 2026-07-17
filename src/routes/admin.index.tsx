@@ -13,16 +13,19 @@ function AdminHome() {
       </div>
       <div className="grid gap-4">
         <Link to="/admin/productos" className="btn-a11y btn-a11y-primary w-full justify-start px-6">
-          <span className="text-2xl">📦</span>
           <span>Ver mis productos</span>
         </Link>
         <Link to="/admin/nuevo" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
-          <span className="text-2xl">➕</span>
           <span>Agregar producto nuevo</span>
         </Link>
         <Link to="/admin/ofertas" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
-          <span className="text-2xl">🏷️</span>
           <span>Ver ofertas activas</span>
+        </Link>
+        <Link
+          to="/admin/categorias"
+          className="btn-a11y btn-a11y-secondary w-full justify-start px-6"
+        >
+          <span>Categorías</span>
         </Link>
       </div>
     </div>
