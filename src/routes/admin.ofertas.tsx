@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { formatPrice, type Producto } from "@/lib/alemoon";
+import { formatPrice, type Categoria, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/admin/ofertas")({
   component: Ofertas,
@@ -13,15 +13,34 @@ function Ofertas() {
   const qc = useQueryClient();
   const [precios, setPrecios] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>("todas");
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: async (): Promise<Categoria[]> => {
+      const { data, error } = await supabase
+        .from("categorias")
+        .select("id, nombre")
+        .order("nombre", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const { data = [], isLoading } = useQuery({
-    queryKey: ["admin-productos"],
+    queryKey: ["admin-productos", categoriaSeleccionada],
     queryFn: async (): Promise<Producto[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("productos")
         .select("*")
         .eq("visible", true)
         .order("fecha_creacion", { ascending: false });
+
+      if (categoriaSeleccionada !== "todas") {
+        query = query.eq("categoria_id", categoriaSeleccionada);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as Producto[];
     },
@@ -72,6 +91,31 @@ function Ofertas() {
       <p className="text-lg text-muted-foreground">
         Activa la oferta con el interruptor y escribe el precio nuevo.
       </p>
+      <div className="flex gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setCategoriaSeleccionada("todas")}
+          className={`btn-a11y rounded-xl border-2 border-border px-4 py-2 ${
+            categoriaSeleccionada === "todas" ? "bg-primary text-primary-foreground" : "bg-muted"
+          }`}
+        >
+          Todas
+        </button>
+        {categorias.map((categoria) => (
+          <button
+            key={categoria.id}
+            type="button"
+            onClick={() => setCategoriaSeleccionada(categoria.id)}
+            className={`btn-a11y rounded-xl border-2 border-border px-4 py-2 ${
+              categoriaSeleccionada === categoria.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted"
+            }`}
+          >
+            {categoria.nombre}
+          </button>
+        ))}
+      </div>
 
       {isLoading ? (
         <p>Cargando...</p>

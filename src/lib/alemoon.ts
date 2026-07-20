@@ -21,6 +21,7 @@ export type Producto = {
   precio: number;
   precio_oferta: number | null;
   en_oferta: boolean;
+  agotado: boolean;
   imagen_url: string;
   categoria_id: string | null;
   visible: boolean;

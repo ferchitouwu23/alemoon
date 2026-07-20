@@ -74,6 +74,15 @@ function AdminLoginPage() {
           <p className="mt-2 text-muted-foreground">Inicia sesion para entrar al panel</p>
         </div>
 
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="btn-a11y btn-a11y-secondary w-full justify-center px-6"
+          >
+            Volver al sitio
+          </Link>
+        </div>
+
         <form
           onSubmit={submit}
           className="space-y-5 rounded-2xl border-2 border-border bg-card p-6"

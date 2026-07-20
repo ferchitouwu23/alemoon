@@ -53,6 +53,7 @@ function EditarProducto() {
       setForm((f) => ({ ...f, ...patch }));
       qc.invalidateQueries({ queryKey: ["admin-productos"] });
       qc.invalidateQueries({ queryKey: ["productos-publicos"] });
+      qc.invalidateQueries({ queryKey: ["admin-producto", id] });
       toast.success("¡Listo! Guardado correctamente.");
       setCampo(null);
     } catch (e: any) {

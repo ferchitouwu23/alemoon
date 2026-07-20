@@ -43,10 +43,16 @@ function AdminLayout() {
     <div className="min-h-screen bg-background text-foreground text-lg">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-4">
-          <Link to="/admin" className="font-display text-2xl">
-            Panel Alemoon
+          <Link to="/" className="font-display text-2xl">
+            Alemoon
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="rounded-xl border-2 border-border bg-background px-4 py-3 text-base font-semibold hover:bg-muted"
+            >
+              Ver sitio publico
+            </Link>
             <Link
               to="/admin"
               className="rounded-xl border-2 border-border bg-background px-4 py-3 text-base font-semibold hover:bg-muted"

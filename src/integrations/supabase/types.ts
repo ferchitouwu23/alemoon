@@ -49,6 +49,7 @@ export type Database = {
       }
       productos: {
         Row: {
+          agotado: boolean
           categoria_id: string | null
           descripcion: string
           en_oferta: boolean
@@ -61,6 +62,7 @@ export type Database = {
           visible: boolean
         }
         Insert: {
+          agotado?: boolean
           categoria_id?: string | null
           descripcion?: string
           en_oferta?: boolean
@@ -73,6 +75,7 @@ export type Database = {
           visible?: boolean
         }
         Update: {
+          agotado?: boolean
           categoria_id?: string | null
           descripcion?: string
           en_oferta?: boolean

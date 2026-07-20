@@ -1,0 +1,2 @@
+ALTER TABLE public.productos
+ADD COLUMN IF NOT EXISTS agotado BOOLEAN NOT NULL DEFAULT false;
