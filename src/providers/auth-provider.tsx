@@ -13,6 +13,7 @@ export type AppRole = "dueno" | "gestora" | null;
 type Perfil = {
   id: string;
   nombre: string;
+  rol: AppRole;
 };
 
 type AuthContextValue = {
@@ -67,19 +68,11 @@ function useProvideAuth(): AuthContextValue {
 
       setLoading(true);
 
-      const [{ data: perfilData, error: perfilError }, { data: roleData, error: roleError }] =
-        await Promise.all([
-          supabase
-            .from("perfiles")
-            .select("id, nombre")
-            .eq("id", nextSession.user.id)
-            .maybeSingle(),
-          supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", nextSession.user.id)
-            .maybeSingle(),
-        ]);
+      const { data: perfilData, error: perfilError } = await supabase
+        .from("perfiles")
+        .select("id, nombre, rol")
+        .eq("id", nextSession.user.id)
+        .maybeSingle();
 
       if (!mounted) return nextSession;
 
@@ -87,12 +80,9 @@ function useProvideAuth(): AuthContextValue {
         console.error("No se pudo cargar el perfil del usuario.", perfilError);
       }
 
-      if (roleError) {
-        console.error("No se pudo cargar el rol del usuario.", roleError);
-      }
-
-      setPerfil(perfilData ?? null);
-      setRole((roleData?.role as AppRole) ?? null);
+      const nextPerfil = (perfilData as Perfil | null) ?? null;
+      setPerfil(nextPerfil);
+      setRole(nextPerfil?.rol ?? null);
       setLoading(false);
       setInitialized(true);
       return nextSession;
@@ -137,30 +127,19 @@ function useProvideAuth(): AuthContextValue {
 
     setLoading(true);
 
-    const [{ data: perfilData, error: perfilError }, { data: roleData, error: roleError }] =
-      await Promise.all([
-        supabase
-          .from("perfiles")
-          .select("id, nombre")
-          .eq("id", latestSession.user.id)
-          .maybeSingle(),
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", latestSession.user.id)
-          .maybeSingle(),
-      ]);
+    const { data: perfilData, error: perfilError } = await supabase
+      .from("perfiles")
+      .select("id, nombre, rol")
+      .eq("id", latestSession.user.id)
+      .maybeSingle();
 
     if (perfilError) {
       console.error("No se pudo cargar el perfil del usuario.", perfilError);
     }
 
-    if (roleError) {
-      console.error("No se pudo cargar el rol del usuario.", roleError);
-    }
-
-    setPerfil(perfilData ?? null);
-    setRole((roleData?.role as AppRole) ?? null);
+    const nextPerfil = (perfilData as Perfil | null) ?? null;
+    setPerfil(nextPerfil);
+    setRole(nextPerfil?.rol ?? null);
     setLoading(false);
     setInitialized(true);
     return latestSession;

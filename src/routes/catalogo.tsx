@@ -137,9 +137,7 @@ function CatalogoPage() {
 function ProductoCard({ p }: { p: Producto }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const precioMostrar = p.en_oferta && p.precio_oferta != null ? p.precio_oferta : p.precio;
-  const descripcionCorta = p.descripcion?.trim()
-    ? p.descripcion.trim()
-    : "Descubre esta pieza en detalle y consulta disponibilidad.";
+  const descripcionCorta = p.descripcion?.trim() || null;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-lg">
@@ -191,9 +189,11 @@ function ProductoCard({ p }: { p: Producto }) {
                   Detalles
                 </p>
                 <h3 className="mt-2 font-display text-2xl leading-tight">{p.nombre}</h3>
-                <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
-                  {descripcionCorta}
-                </p>
+                {descripcionCorta && (
+                  <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
+                    {descripcionCorta}
+                  </p>
+                )}
               </div>
 
               <div className="mt-4">

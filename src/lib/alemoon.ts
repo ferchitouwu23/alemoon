@@ -17,7 +17,7 @@ export function formatPrice(n: number | string | null | undefined) {
 export type Producto = {
   id: string;
   nombre: string;
-  descripcion: string;
+  descripcion: string | null;
   precio: number;
   precio_oferta: number | null;
   en_oferta: boolean;

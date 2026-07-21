@@ -34,16 +34,19 @@ export type Database = {
           created_at: string
           id: string
           nombre: string
+          rol: Database["public"]["Enums"]["app_role"] | null
         }
         Insert: {
           created_at?: string
           id: string
           nombre?: string
+          rol?: Database["public"]["Enums"]["app_role"] | null
         }
         Update: {
           created_at?: string
           id?: string
           nombre?: string
+          rol?: Database["public"]["Enums"]["app_role"] | null
         }
         Relationships: []
       }
@@ -51,7 +54,7 @@ export type Database = {
         Row: {
           agotado: boolean
           categoria_id: string | null
-          descripcion: string
+          descripcion: string | null
           en_oferta: boolean
           fecha_creacion: string
           id: string
@@ -64,7 +67,7 @@ export type Database = {
         Insert: {
           agotado?: boolean
           categoria_id?: string | null
-          descripcion?: string
+          descripcion?: string | null
           en_oferta?: boolean
           fecha_creacion?: string
           id?: string
@@ -77,7 +80,7 @@ export type Database = {
         Update: {
           agotado?: boolean
           categoria_id?: string | null
-          descripcion?: string
+          descripcion?: string | null
           en_oferta?: boolean
           fecha_creacion?: string
           id?: string

@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { formatPrice, type Producto } from "@/lib/alemoon";
+import { formatPrice, type Categoria, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/admin/productos")({
   component: ProductosAdmin,
@@ -12,6 +12,19 @@ export const Route = createFileRoute("/admin/productos")({
 function ProductosAdmin() {
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState<Producto | null>(null);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>("todas");
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: async (): Promise<Categoria[]> => {
+      const { data, error } = await supabase
+        .from("categorias")
+        .select("id, nombre")
+        .order("nombre", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const {
     data = [],
@@ -32,6 +45,11 @@ function ProductosAdmin() {
       return (data ?? []) as Producto[];
     },
   });
+
+  const productosFiltrados = useMemo(() => {
+    if (categoriaSeleccionada === "todas") return data;
+    return data.filter((producto) => producto.categoria_id === categoriaSeleccionada);
+  }, [categoriaSeleccionada, data]);
 
   async function borrar(producto: Producto) {
     const { error } = await supabase.from("productos").delete().eq("id", producto.id);
@@ -88,6 +106,34 @@ function ProductosAdmin() {
         </Link>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setCategoriaSeleccionada("todas")}
+          className={`rounded-full border px-4 py-2 text-sm transition ${
+            categoriaSeleccionada === "todas"
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-background hover:border-primary"
+          }`}
+        >
+          Todas
+        </button>
+        {categorias.map((categoria) => (
+          <button
+            key={categoria.id}
+            type="button"
+            onClick={() => setCategoriaSeleccionada(categoria.id)}
+            className={`rounded-full border px-4 py-2 text-sm transition ${
+              categoriaSeleccionada === categoria.id
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background hover:border-primary"
+            }`}
+          >
+            {categoria.nombre}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <p className="text-muted-foreground">Cargando productos...</p>
       ) : isError ? (
@@ -103,16 +149,16 @@ function ProductosAdmin() {
             Intentar de nuevo
           </button>
         </div>
-      ) : data.length === 0 ? (
+      ) : productosFiltrados.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border py-12 text-center">
-          <p className="text-lg">Todavía no hay productos.</p>
+          <p className="text-lg">Todavía no hay productos en esta categoría.</p>
           <Link to="/admin/nuevo" className="btn-a11y btn-a11y-primary mt-5 inline-flex">
             Agregar el primero
           </Link>
         </div>
       ) : (
         <div className="space-y-4">
-          {data.map((producto) => (
+          {productosFiltrados.map((producto) => (
             <div
               key={producto.id}
               className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-card p-4 md:flex-row md:items-center"
