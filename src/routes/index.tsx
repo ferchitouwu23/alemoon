@@ -1,17 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { STORE_NAME, whatsappUrl } from "@/lib/alemoon";
-import { promoHeroImages } from "@/lib/promo-gallery";
+import { promoCombos, promoHeroImages } from "@/lib/promo-gallery";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
+  const combosPreview = promoCombos.slice(0, 2);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="font-display text-2xl tracking-tight">
+          <Link
+            to="/"
+            className="font-display text-2xl tracking-tight no-underline outline-none ring-0 shadow-none focus-visible:outline-none focus-visible:ring-0"
+          >
             {STORE_NAME}
           </Link>
           <nav className="flex items-center gap-4 text-sm">
@@ -25,7 +30,7 @@ function Home() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:py-24 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mx-auto grid max-w-6xl gap-12 px-5 py-18 md:py-28 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
           <p className="mb-4 text-xs uppercase tracking-[0.25em] text-muted-foreground">
             Bisuteria hecha a mano
@@ -58,7 +63,7 @@ function Home() {
           {promoHeroImages.map((image, index) => (
             <div
               key={image}
-              className={`relative overflow-hidden border border-border/40 ${
+              className={`group relative overflow-hidden border border-border/40 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 index === 0
                   ? "col-span-2 aspect-[4/3] rounded-[2rem]"
                   : "aspect-square rounded-[1.5rem]"
@@ -67,7 +72,7 @@ function Home() {
               <img
                 src={image}
                 alt={`Coleccion Alemoon ${index + 1}`}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                 loading={index === 0 ? "eager" : "lazy"}
               />
             </div>
@@ -75,7 +80,69 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-16 pt-4">
+      <section className="border-y border-border/50 bg-muted/40">
+        <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                Combos destacados
+              </p>
+              <h2 className="mt-3 font-display text-3xl md:text-4xl">
+                Sets pensados para regalar o vender con mas impacto
+              </h2>
+            </div>
+            <Link
+              to="/catalogo"
+              className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
+            >
+              Ver todo el catalogo
+            </Link>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            {combosPreview.map((combo, index) => (
+              <article
+                key={combo.title}
+                className={`group overflow-hidden rounded-[2rem] border border-border/60 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                  index === 0 ? "lg:grid lg:grid-cols-[1fr_0.9fr]" : ""
+                }`}
+              >
+                <div
+                  className={`overflow-hidden ${index === 0 ? "min-h-[320px]" : "aspect-[4/3]"}`}
+                >
+                  <img
+                    src={combo.image}
+                    alt={combo.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="flex flex-col justify-center p-6 md:p-8">
+                  <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                    Combo visual
+                  </p>
+                  <h3 className="mt-3 font-display text-2xl md:text-3xl">{combo.title}</h3>
+                  <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground md:text-base">
+                    {combo.description}
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <a
+                      href={whatsappUrl(combo.title)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-a11y btn-a11y-secondary min-h-12 px-5 text-base"
+                    >
+                      Consultar por WhatsApp
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-16 pt-10 md:pt-16">
         <div className="rounded-[2rem] border border-border/60 bg-background px-6 py-8 text-center shadow-sm md:px-8">
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
             Catalogo completo

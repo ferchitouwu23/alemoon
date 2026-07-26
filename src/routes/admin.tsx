@@ -43,7 +43,7 @@ function AdminLayout() {
     <div className="min-h-screen bg-background text-foreground text-lg">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-4">
-          <Link to="/" className="font-display text-2xl">
+          <Link to="/" className="font-display text-2xl tracking-tight md:text-3xl">
             Alemoon
           </Link>
           <div className="flex items-center gap-2">

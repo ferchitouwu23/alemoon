@@ -18,6 +18,8 @@ function CategoriasAdmin() {
   const [nombreNuevo, setNombreNuevo] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState<CategoriaConConteo | null>(null);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [nombreEditado, setNombreEditado] = useState("");
 
   const { data: categorias = [], isLoading } = useQuery({
     queryKey: ["admin-categorias"],
@@ -59,6 +61,14 @@ function CategoriasAdmin() {
       return;
     }
 
+    const existe = categorias.some(
+      (categoria) => categoria.nombre.trim().toLowerCase() === nombre.toLowerCase(),
+    );
+    if (existe) {
+      toast.error("Ya existe una categoría con ese nombre.");
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase.from("categorias").insert({ nombre });
@@ -66,10 +76,72 @@ function CategoriasAdmin() {
 
       toast.success("Categoría creada.");
       setNombreNuevo("");
-      qc.invalidateQueries({ queryKey: ["categorias"] });
-      qc.invalidateQueries({ queryKey: ["admin-categorias"] });
+      await qc.invalidateQueries({ queryKey: ["categorias"] });
+      await qc.invalidateQueries({ queryKey: ["admin-categorias"] });
     } catch (error: any) {
       toast.error(error.message ?? "No se pudo crear la categoría.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function empezarEdicion(categoria: CategoriaConConteo) {
+    setEditandoId(categoria.id);
+    setNombreEditado(categoria.nombre);
+  }
+
+  function cancelarEdicion() {
+    setEditandoId(null);
+    setNombreEditado("");
+  }
+
+  async function guardarCambio(categoria: CategoriaConConteo) {
+    const nombre = nombreEditado.trim();
+    if (!nombre) {
+      toast.error("El nombre no puede estar vacío.");
+      return;
+    }
+
+    const existe = categorias.some(
+      (item) => item.id !== categoria.id && item.nombre.trim().toLowerCase() === nombre.toLowerCase(),
+    );
+    if (existe) {
+      toast.error("Ya existe otra categoría con ese nombre.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("categorias").update({ nombre }).eq("id", categoria.id);
+      if (error) throw error;
+
+      qc.setQueryData<CategoriaConConteo[]>(["admin-categorias"], (actuales) =>
+        (actuales ?? []).map((item) =>
+          item.id === categoria.id
+            ? {
+                ...item,
+                nombre,
+              }
+            : item,
+        ),
+      );
+      qc.setQueryData<Categoria[]>(["categorias"], (actuales) =>
+        (actuales ?? []).map((item) =>
+          item.id === categoria.id
+            ? {
+                ...item,
+                nombre,
+              }
+            : item,
+        ),
+      );
+
+      cancelarEdicion();
+      toast.success("¡Listo! Guardado correctamente");
+      await qc.invalidateQueries({ queryKey: ["categorias"] });
+      await qc.invalidateQueries({ queryKey: ["admin-categorias"] });
+    } catch (error: any) {
+      toast.error(error.message ?? "No se pudo guardar el cambio.");
     } finally {
       setSaving(false);
     }
@@ -102,8 +174,8 @@ function CategoriasAdmin() {
 
       toast.success("Categoría eliminada.");
       setConfirm(null);
-      qc.invalidateQueries({ queryKey: ["categorias"] });
-      qc.invalidateQueries({ queryKey: ["admin-categorias"] });
+      await qc.invalidateQueries({ queryKey: ["categorias"] });
+      await qc.invalidateQueries({ queryKey: ["admin-categorias"] });
     } catch (error: any) {
       toast.error(error.message ?? "No se pudo borrar la categoría.");
     } finally {
@@ -179,27 +251,73 @@ function CategoriasAdmin() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {categorias.map((categoria) => (
-            <article
-              key={categoria.id}
-              className="space-y-4 rounded-2xl border-2 border-border bg-card p-5"
-            >
-              <div>
-                <h2 className="text-2xl font-semibold">{categoria.nombre}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {categoria.productCount === 0
-                    ? "Sin productos asociados"
-                    : `${categoria.productCount} producto${categoria.productCount === 1 ? "" : "s"} asociado${categoria.productCount === 1 ? "" : "s"}`}
-                </p>
-              </div>
-              <button
-                onClick={() => intentarBorrar(categoria)}
-                className="btn-a11y btn-a11y-danger min-h-12 px-5 text-base"
+          {categorias.map((categoria) => {
+            const enEdicion = editandoId === categoria.id;
+
+            return (
+              <article
+                key={categoria.id}
+                className="space-y-4 rounded-2xl border-2 border-border bg-card p-5"
               >
-                Borrar
-              </button>
-            </article>
-          ))}
+                <div>
+                  {enEdicion ? (
+                    <div className="space-y-3">
+                      <label className="block">
+                        <span className="mb-2 block text-sm text-muted-foreground">
+                          Nombre actual
+                        </span>
+                        <input
+                          value={nombreEditado}
+                          onChange={(event) => setNombreEditado(event.target.value)}
+                          className="w-full rounded-xl border-2 border-border bg-background px-4 py-3 text-lg focus:border-primary focus:outline-none"
+                        />
+                      </label>
+                      <button
+                        disabled={saving}
+                        onClick={() => guardarCambio(categoria)}
+                        className="btn-a11y btn-a11y-primary min-h-12 px-5 text-base disabled:opacity-40"
+                      >
+                        Guardar cambio
+                      </button>
+                      <button
+                        disabled={saving}
+                        onClick={cancelarEdicion}
+                        className="btn-a11y btn-a11y-secondary min-h-12 px-5 text-base disabled:opacity-40"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <h2 className="text-2xl font-semibold">{categoria.nombre}</h2>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {categoria.productCount === 0
+                          ? "Sin productos asociados"
+                          : `${categoria.productCount} producto${categoria.productCount === 1 ? "" : "s"} asociado${categoria.productCount === 1 ? "" : "s"}`}
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {!enEdicion && (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => empezarEdicion(categoria)}
+                      className="btn-a11y btn-a11y-secondary min-h-12 px-5 text-base"
+                    >
+                      Modificar
+                    </button>
+                    <button
+                      onClick={() => intentarBorrar(categoria)}
+                      className="btn-a11y btn-a11y-danger min-h-12 px-5 text-base"
+                    >
+                      Borrar
+                    </button>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

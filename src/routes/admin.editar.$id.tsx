@@ -3,18 +3,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  formatPrice,
-  uploadProductImage,
-  type Categoria,
-  type Producto,
-} from "@/lib/alemoon";
+import { formatPrice, uploadProductImage, type Categoria, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/admin/editar/$id")({
   component: EditarProducto,
 });
 
-type Campo = "foto" | "nombre" | "precio" | "descripcion" | "categoria";
+type Campo = "foto" | "nombre" | "precio" | "descripcion" | "categoria" | "agotado";
 
 function EditarProducto() {
   const { id } = useParams({ from: "/admin/editar/$id" });
@@ -78,7 +73,10 @@ function EditarProducto() {
               if (!f) return;
               setUploading(true);
               try {
-                const url = await uploadProductImage(f);
+                const categoryName =
+                  cats.find((c) => c.id === (form.categoria_id ?? data.categoria_id))?.nombre ??
+                  "sin-categoria";
+                const url = await uploadProductImage(f, categoryName);
                 await guardarCampo({ imagen_url: url });
               } catch (er: any) {
                 toast.error(er.message);
@@ -87,8 +85,8 @@ function EditarProducto() {
               }
             }}
           />
-          <div className="border-4 border-dashed border-border rounded-2xl p-8 text-center bg-card">
-            {uploading ? "Subiendo..." : "📷 Toca aquí para elegir una foto nueva"}
+          <div className="rounded-2xl border-4 border-dashed border-border bg-card p-8 text-center">
+            {uploading ? "Subiendo..." : "Toca aqui para elegir una foto nueva"}
           </div>
         </label>
       </EditWrap>
@@ -102,7 +100,7 @@ function EditarProducto() {
           autoFocus
           value={form.nombre ?? ""}
           onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-          className="w-full px-5 py-4 text-xl rounded-xl border-2 border-border bg-card"
+          className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-xl"
         />
         <SaveBtn saving={saving} onClick={() => guardarCampo({ nombre: form.nombre })} />
       </EditWrap>
@@ -113,10 +111,13 @@ function EditarProducto() {
     return (
       <EditWrap titulo="Cambiar el precio" onCancel={() => setCampo(null)}>
         <input
-          type="number" min="0" step="0.01" autoFocus
+          type="number"
+          min="0"
+          step="0.01"
+          autoFocus
           value={form.precio ?? 0}
           onChange={(e) => setForm({ ...form, precio: Number(e.target.value) })}
-          className="w-full px-5 py-4 text-2xl rounded-xl border-2 border-border bg-card"
+          className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-2xl"
         />
         <SaveBtn saving={saving} onClick={() => guardarCampo({ precio: Number(form.precio) })} />
       </EditWrap>
@@ -125,33 +126,60 @@ function EditarProducto() {
 
   if (campo === "descripcion") {
     return (
-      <EditWrap titulo="Cambiar la descripción" onCancel={() => setCampo(null)}>
+      <EditWrap titulo="Cambiar la descripcion" onCancel={() => setCampo(null)}>
         <textarea
           rows={6}
           autoFocus
           value={form.descripcion ?? ""}
           onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-          className="w-full px-5 py-4 text-lg rounded-xl border-2 border-border bg-card"
+          className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-lg"
         />
-        <SaveBtn saving={saving} onClick={() => guardarCampo({ descripcion: form.descripcion })} />
+        <SaveBtn
+          saving={saving}
+          onClick={() => guardarCampo({ descripcion: form.descripcion?.trim() || null })}
+        />
       </EditWrap>
     );
   }
 
   if (campo === "categoria") {
     return (
-      <EditWrap titulo="Cambiar la categoría" onCancel={() => setCampo(null)}>
+      <EditWrap titulo="Cambiar la categoria" onCancel={() => setCampo(null)}>
         <select
           value={form.categoria_id ?? ""}
           onChange={(e) => setForm({ ...form, categoria_id: e.target.value || null })}
-          className="w-full px-5 py-4 text-xl rounded-xl border-2 border-border bg-card"
+          className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-xl"
         >
-          <option value="">Sin categoría</option>
+          <option value="">Sin categoria</option>
           {cats.map((c) => (
-            <option key={c.id} value={c.id}>{c.nombre}</option>
+            <option key={c.id} value={c.id}>
+              {c.nombre}
+            </option>
           ))}
         </select>
-        <SaveBtn saving={saving} onClick={() => guardarCampo({ categoria_id: form.categoria_id ?? null })} />
+        <SaveBtn
+          saving={saving}
+          onClick={() => guardarCampo({ categoria_id: form.categoria_id ?? null })}
+        />
+      </EditWrap>
+    );
+  }
+
+  if (campo === "agotado") {
+    return (
+      <EditWrap titulo="Cambiar disponibilidad" onCancel={() => setCampo(null)}>
+        <label className="flex items-center gap-3 rounded-2xl border-2 border-border bg-card px-5 py-4">
+          <input
+            type="checkbox"
+            checked={Boolean(form.agotado)}
+            onChange={(e) => setForm({ ...form, agotado: e.target.checked })}
+            className="h-5 w-5"
+          />
+          <span className="text-lg font-medium">
+            {form.agotado ? "Producto agotado" : "Producto disponible"}
+          </span>
+        </label>
+        <SaveBtn saving={saving} onClick={() => guardarCampo({ agotado: Boolean(form.agotado) })} />
       </EditWrap>
     );
   }
@@ -159,13 +187,16 @@ function EditarProducto() {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-3xl">Editar producto</h1>
-      <p className="text-muted-foreground">Elige qué quieres cambiar. Se guarda uno a la vez.</p>
+      <p className="text-muted-foreground">Elige que quieres cambiar. Se guarda uno a la vez.</p>
 
-      <button onClick={() => setCampo("foto")} className="w-full bg-card border-2 border-border rounded-2xl p-4 flex items-center gap-4 hover:bg-muted text-left">
+      <button
+        onClick={() => setCampo("foto")}
+        className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left hover:bg-muted"
+      >
         {data.imagen_url ? (
-          <img src={data.imagen_url} alt="" className="w-20 h-20 rounded-xl object-cover" />
+          <img src={data.imagen_url} alt="" className="h-20 w-20 rounded-xl object-cover" />
         ) : (
-          <div className="w-20 h-20 rounded-xl bg-muted grid place-items-center text-2xl">📷</div>
+          <div className="grid h-20 w-20 place-items-center rounded-xl bg-muted text-2xl">F</div>
         )}
         <div className="flex-1">
           <div className="text-sm text-muted-foreground">Foto</div>
@@ -177,21 +208,26 @@ function EditarProducto() {
       <EditRow label="Nombre" value={data.nombre} onClick={() => setCampo("nombre")} />
       <EditRow label="Precio" value={formatPrice(data.precio)} onClick={() => setCampo("precio")} />
       <EditRow
-        label="Descripción"
-        value={data.descripcion || "(sin descripción)"}
+        label="Descripcion"
+        value={data.descripcion || "(sin descripcion)"}
         onClick={() => setCampo("descripcion")}
       />
       <EditRow
-        label="Categoría"
-        value={cats.find((c) => c.id === data.categoria_id)?.nombre || "Sin categoría"}
+        label="Categoria"
+        value={cats.find((c) => c.id === data.categoria_id)?.nombre || "Sin categoria"}
         onClick={() => setCampo("categoria")}
+      />
+      <EditRow
+        label="Disponibilidad"
+        value={data.agotado ? "Agotado" : "Disponible"}
+        onClick={() => setCampo("agotado")}
       />
 
       <button
         onClick={() => navigate({ to: "/admin/productos" })}
-        className="btn-a11y btn-a11y-secondary w-full mt-4"
+        className="btn-a11y btn-a11y-secondary mt-4 w-full"
       >
-        ← Volver a mis productos
+        Volver a mis productos
       </button>
     </div>
   );
@@ -201,11 +237,11 @@ function EditRow({ label, value, onClick }: { label: string; value: string; onCl
   return (
     <button
       onClick={onClick}
-      className="w-full bg-card border-2 border-border rounded-2xl p-4 flex items-center gap-4 hover:bg-muted text-left"
+      className="flex w-full items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left hover:bg-muted"
     >
       <div className="flex-1">
         <div className="text-sm text-muted-foreground">{label}</div>
-        <div className="text-lg font-semibold truncate">{value}</div>
+        <div className="truncate text-lg font-semibold">{value}</div>
       </div>
       <span className="text-2xl">✏️</span>
     </button>
@@ -226,7 +262,7 @@ function EditWrap({
       <h1 className="font-display text-3xl">{titulo}</h1>
       {children}
       <button onClick={onCancel} className="btn-a11y btn-a11y-secondary w-full">
-        ← Cancelar
+        Cancelar
       </button>
     </div>
   );
@@ -235,7 +271,7 @@ function EditWrap({
 function SaveBtn({ saving, onClick }: { saving: boolean; onClick: () => void }) {
   return (
     <button disabled={saving} onClick={onClick} className="btn-a11y btn-a11y-primary w-full">
-      {saving ? "Guardando..." : "💾 Guardar"}
+      {saving ? "Guardando..." : "Guardar"}
     </button>
   );
 }

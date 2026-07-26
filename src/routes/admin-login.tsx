@@ -68,7 +68,7 @@ function AdminLoginPage() {
     <div className="grid min-h-screen place-items-center bg-background px-5 py-10 text-foreground">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link to="/" className="font-display text-3xl">
+          <Link to="/" className="font-display text-3xl tracking-tight md:text-4xl">
             Alemoon
           </Link>
           <p className="mt-2 text-muted-foreground">Inicia sesion para entrar al panel</p>

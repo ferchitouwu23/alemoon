@@ -13,6 +13,8 @@ function ProductosAdmin() {
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState<Producto | null>(null);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>("todas");
+  const [busqueda, setBusqueda] = useState("");
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>("todos");
 
   const { data: categorias = [] } = useQuery({
     queryKey: ["categorias"],
@@ -47,9 +49,25 @@ function ProductosAdmin() {
   });
 
   const productosFiltrados = useMemo(() => {
-    if (categoriaSeleccionada === "todas") return data;
-    return data.filter((producto) => producto.categoria_id === categoriaSeleccionada);
-  }, [categoriaSeleccionada, data]);
+    const termino = busqueda.trim().toLowerCase();
+
+    return data.filter((producto) => {
+      const coincideCategoria =
+        categoriaSeleccionada === "todas" || producto.categoria_id === categoriaSeleccionada;
+      const coincideBusqueda =
+        termino.length === 0 ||
+        producto.nombre.toLowerCase().includes(termino) ||
+        producto.descripcion?.toLowerCase().includes(termino);
+      const coincideEstado =
+        estadoSeleccionado === "todos" ||
+        (estadoSeleccionado === "visibles" && producto.visible) ||
+        (estadoSeleccionado === "ocultos" && !producto.visible) ||
+        (estadoSeleccionado === "agotados" && producto.agotado) ||
+        (estadoSeleccionado === "ofertas" && producto.en_oferta);
+
+      return coincideCategoria && coincideBusqueda && coincideEstado;
+    });
+  }, [busqueda, categoriaSeleccionada, data, estadoSeleccionado]);
 
   async function borrar(producto: Producto) {
     const { error } = await supabase.from("productos").delete().eq("id", producto.id);
@@ -106,6 +124,31 @@ function ProductosAdmin() {
         </Link>
       </div>
 
+      <div className="grid gap-3 md:grid-cols-[1fr_220px]">
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(event) => setBusqueda(event.target.value)}
+          placeholder="Buscar producto por nombre o descripcion"
+          className="min-h-12 rounded-2xl border-2 border-border bg-background px-4 text-base outline-none transition focus:border-primary"
+        />
+        <select
+          value={estadoSeleccionado}
+          onChange={(event) => setEstadoSeleccionado(event.target.value)}
+          className="min-h-12 rounded-2xl border-2 border-border bg-background px-4 text-base outline-none transition focus:border-primary"
+        >
+          <option value="todos">Todos los estados</option>
+          <option value="visibles">Solo visibles</option>
+          <option value="ocultos">Solo ocultos</option>
+          <option value="agotados">Solo agotados</option>
+          <option value="ofertas">Solo ofertas</option>
+        </select>
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        Mostrando {productosFiltrados.length} producto{productosFiltrados.length === 1 ? "" : "s"}.
+      </p>
+
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
@@ -151,7 +194,7 @@ function ProductosAdmin() {
         </div>
       ) : productosFiltrados.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border py-12 text-center">
-          <p className="text-lg">Todavía no hay productos en esta categoría.</p>
+          <p className="text-lg">Todavía no hay productos con esos filtros.</p>
           <Link to="/admin/nuevo" className="btn-a11y btn-a11y-primary mt-5 inline-flex">
             Agregar el primero
           </Link>
@@ -165,24 +208,25 @@ function ProductosAdmin() {
             >
               <div className="flex flex-1 items-center gap-4">
                 {producto.imagen_url ? (
-                  <img
-                    src={producto.imagen_url}
-                    alt=""
-                    className="h-24 w-24 rounded-xl object-cover"
-                  />
+                  <img src={producto.imagen_url} alt="" className="h-24 w-24 rounded-xl object-cover" />
                 ) : (
                   <div className="grid h-24 w-24 place-items-center rounded-xl bg-muted text-3xl">
                     P
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="text-xl font-semibold">{producto.nombre}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="text-xl font-semibold">{producto.nombre}</div>
+                    {producto.agotado && (
+                      <span className="rounded-full bg-destructive px-2.5 py-1 text-xs font-semibold text-destructive-foreground">
+                        Agotado
+                      </span>
+                    )}
+                  </div>
                   <div className="text-lg">
                     {producto.en_oferta && producto.precio_oferta != null ? (
                       <>
-                        <span className="font-semibold">
-                          {formatPrice(producto.precio_oferta)}
-                        </span>{" "}
+                        <span className="font-semibold">{formatPrice(producto.precio_oferta)}</span>{" "}
                         <span className="text-base text-muted-foreground line-through">
                           {formatPrice(producto.precio)}
                         </span>
@@ -193,6 +237,9 @@ function ProductosAdmin() {
                   </div>
                   {!producto.visible && (
                     <span className="text-sm text-destructive">Oculto del catálogo</span>
+                  )}
+                  {producto.visible && producto.en_oferta && (
+                    <span className="text-sm text-muted-foreground">Visible con oferta activa</span>
                   )}
                 </div>
               </div>

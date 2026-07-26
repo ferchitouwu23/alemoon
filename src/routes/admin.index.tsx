@@ -1,16 +1,65 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Categoria, Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
 });
 
 function AdminHome() {
+  const { data } = useQuery({
+    queryKey: ["admin-dashboard"],
+    queryFn: async (): Promise<{ productos: Producto[]; categorias: Categoria[] }> => {
+      const [productosResult, categoriasResult] = await Promise.all([
+        supabase.from("productos").select("*"),
+        supabase.from("categorias").select("id, nombre"),
+      ]);
+
+      if (productosResult.error) throw productosResult.error;
+      if (categoriasResult.error) throw categoriasResult.error;
+
+      return {
+        productos: (productosResult.data ?? []) as Producto[],
+        categorias: (categoriasResult.data ?? []) as Categoria[],
+      };
+    },
+  });
+
+  const productos = data?.productos ?? [];
+  const categorias = data?.categorias ?? [];
+  const visibles = productos.filter((producto) => producto.visible).length;
+  const agotados = productos.filter((producto) => producto.agotado).length;
+  const ofertas = productos.filter((producto) => producto.en_oferta).length;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl md:text-4xl">¿Qué quieres hacer?</h1>
         <p className="mt-2 text-muted-foreground">Elige una opción.</p>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border-2 border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Productos cargados</p>
+          <p className="mt-2 font-display text-4xl">{productos.length}</p>
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Categorias activas</p>
+          <p className="mt-2 font-display text-4xl">{categorias.length}</p>
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Productos visibles</p>
+          <p className="mt-2 font-display text-4xl">{visibles}</p>
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Agotados / ofertas</p>
+          <p className="mt-2 font-display text-4xl">
+            {agotados} / {ofertas}
+          </p>
+        </div>
+      </div>
+
       <div className="grid gap-4">
         <Link to="/admin/productos" className="btn-a11y btn-a11y-primary w-full justify-start px-6">
           <span>Ver mis productos</span>
@@ -21,10 +70,7 @@ function AdminHome() {
         <Link to="/admin/ofertas" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
           <span>Ver ofertas activas</span>
         </Link>
-        <Link
-          to="/admin/categorias"
-          className="btn-a11y btn-a11y-secondary w-full justify-start px-6"
-        >
+        <Link to="/admin/categorias" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
           <span>Categorías</span>
         </Link>
       </div>

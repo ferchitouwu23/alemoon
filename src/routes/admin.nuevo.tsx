@@ -12,8 +12,10 @@ export const Route = createFileRoute("/admin/nuevo")({
 type Datos = {
   imagen_url: string;
   nombre: string;
+  descripcion: string;
   precio: string;
   categoria_id: string | null;
+  agotado: boolean;
 };
 
 function NuevoWizard() {
@@ -23,8 +25,10 @@ function NuevoWizard() {
   const [datos, setDatos] = useState<Datos>({
     imagen_url: "",
     nombre: "",
+    descripcion: "",
     precio: "",
     categoria_id: null,
+    agotado: false,
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -76,9 +80,11 @@ function NuevoWizard() {
 
       const { error } = await supabase.from("productos").insert({
         nombre: datos.nombre,
+        descripcion: datos.descripcion.trim() || null,
         precio: Number(datos.precio),
         imagen_url: imageUrl,
         categoria_id: datos.categoria_id,
+        agotado: datos.agotado,
         visible: true,
       });
 
@@ -133,6 +139,16 @@ function NuevoWizard() {
             />
           </label>
           <label className="block">
+            <span className="mb-2 block text-lg">Descripción</span>
+            <textarea
+              rows={4}
+              value={datos.descripcion}
+              onChange={(event) => setDatos({ ...datos, descripcion: event.target.value })}
+              placeholder="Describe brevemente la pieza, materiales, estilo o detalles importantes."
+              className="w-full rounded-xl border-2 border-border bg-card px-5 py-4 text-lg focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block">
             <span className="mb-2 block text-lg">Categoría</span>
             <select
               value={datos.categoria_id ?? ""}
@@ -155,6 +171,15 @@ function NuevoWizard() {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="flex items-center gap-3 rounded-2xl border-2 border-border bg-card px-5 py-4">
+            <input
+              type="checkbox"
+              checked={datos.agotado}
+              onChange={(event) => setDatos({ ...datos, agotado: event.target.checked })}
+              className="h-5 w-5"
+            />
+            <span className="text-lg font-medium">Marcar como agotado</span>
           </label>
 
           {isCategoriasError ? (
@@ -249,6 +274,12 @@ function NuevoWizard() {
               <div className="text-sm text-muted-foreground">Nombre</div>
               <div className="text-xl font-semibold">{datos.nombre}</div>
             </div>
+            {datos.descripcion.trim() && (
+              <div>
+                <div className="text-sm text-muted-foreground">Descripción</div>
+                <div className="text-base text-foreground">{datos.descripcion}</div>
+              </div>
+            )}
             <div>
               <div className="text-sm text-muted-foreground">Categoría</div>
               <div className="text-xl font-semibold">{selectedCategoryName}</div>
@@ -256,6 +287,10 @@ function NuevoWizard() {
             <div>
               <div className="text-sm text-muted-foreground">Precio</div>
               <div className="text-xl font-semibold">{formatPrice(datos.precio)}</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Estado</div>
+              <div className="text-xl font-semibold">{datos.agotado ? "Agotado" : "Disponible"}</div>
             </div>
           </div>
         </section>
@@ -268,7 +303,14 @@ function NuevoWizard() {
           <div className="grid gap-3">
             <button
               onClick={() => {
-                setDatos({ imagen_url: "", nombre: "", precio: "", categoria_id: null });
+                setDatos({
+                  imagen_url: "",
+                  nombre: "",
+                  descripcion: "",
+                  precio: "",
+                  categoria_id: null,
+                  agotado: false,
+                });
                 setSelectedFile(null);
                 setPreviewUrl("");
                 setStep(1);
