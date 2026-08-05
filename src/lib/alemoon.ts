@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
-export const WHATSAPP_NUMBER = "593960219620";
+export const WHATSAPP_NUMBER = "593989303761";
 export const STORE_NAME = "Alemoon";
 
 export function prefilledWhatsappUrl(message: string) {
