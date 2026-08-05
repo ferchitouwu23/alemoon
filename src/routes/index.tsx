@@ -1,21 +1,39 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { STORE_NAME, whatsappUrl, type Promocion } from "@/lib/alemoon";
-import { promoCombos } from "@/lib/promo-gallery";
+import {
+  STORE_NAME,
+  prefilledWhatsappUrl,
+  whatsappUrl,
+  type ComboDestacado,
+  type Promocion,
+} from "@/lib/alemoon";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
-  const combosPreview = promoCombos.slice(0, 2);
   const { data: promociones = [] } = useQuery({
     queryKey: ["home-promociones"],
     queryFn: async (): Promise<Promocion[]> => {
       const { data, error } = await supabase
         .from("promociones")
         .select("id, imagen_url, titulo, orden, activo, fecha_creacion")
+        .eq("activo", true)
+        .order("orden", { ascending: true })
+        .order("fecha_creacion", { ascending: true });
+
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const { data: combosDestacados = [] } = useQuery({
+    queryKey: ["home-combos-destacados"],
+    queryFn: async (): Promise<ComboDestacado[]> => {
+      const { data, error } = await supabase
+        .from("combos_destacados")
+        .select("id, imagen_url, etiqueta, titulo, descripcion, mensaje_whatsapp, orden, activo, fecha_creacion")
         .eq("activo", true)
         .order("orden", { ascending: true })
         .order("fecha_creacion", { ascending: true });
@@ -107,67 +125,71 @@ function Home() {
         )}
       </section>
 
-      <section className="border-y border-border/50 bg-muted/40">
-        <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
-          <div className="mb-10 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                Combos destacados
-              </p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl">
-                Sets pensados para regalar o vender con mas impacto
-              </h2>
-            </div>
-            <Link
-              to="/catalogo"
-              className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
-            >
-              Ver todo el catalogo
-            </Link>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            {combosPreview.map((combo, index) => (
-              <article
-                key={combo.title}
-                className={`group overflow-hidden rounded-[2rem] border border-border/60 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                  index === 0 ? "lg:grid lg:grid-cols-[1fr_0.9fr]" : ""
-                }`}
+      {combosDestacados.length > 0 && (
+        <section className="border-y border-border/50 bg-muted/40">
+          <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+            <div className="mb-10 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                  Combos destacados
+                </p>
+                <h2 className="mt-3 font-display text-3xl md:text-4xl">
+                  Sets pensados para regalar o vender con mas impacto
+                </h2>
+              </div>
+              <Link
+                to="/catalogo"
+                className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
               >
-                <div
-                  className={`overflow-hidden ${index === 0 ? "min-h-[320px]" : "aspect-[4/3]"}`}
+                Ver todo el catalogo
+              </Link>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+              {combosDestacados.slice(0, 2).map((combo, index) => (
+                <article
+                  key={combo.id}
+                  className={`group overflow-hidden rounded-[2rem] border border-border/60 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                    index === 0 ? "lg:grid lg:grid-cols-[1fr_0.9fr]" : ""
+                  }`}
                 >
-                  <img
-                    src={combo.image}
-                    alt={combo.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="flex flex-col justify-center p-6 md:p-8">
-                  <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    Combo visual
-                  </p>
-                  <h3 className="mt-3 font-display text-2xl md:text-3xl">{combo.title}</h3>
-                  <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground md:text-base">
-                    {combo.description}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <a
-                      href={whatsappUrl(combo.title)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-a11y btn-a11y-secondary min-h-12 px-5 text-base"
-                    >
-                      Consultar por WhatsApp
-                    </a>
+                  <div
+                    className={`overflow-hidden ${index === 0 ? "min-h-[320px]" : "aspect-[4/3]"}`}
+                  >
+                    <img
+                      src={combo.imagen_url}
+                      alt={combo.titulo}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-              </article>
-            ))}
+                  <div className="flex flex-col justify-center p-6 md:p-8">
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                      {combo.etiqueta?.trim() || "Combo visual"}
+                    </p>
+                    <h3 className="mt-3 font-display text-2xl md:text-3xl">{combo.titulo}</h3>
+                    {combo.descripcion?.trim() ? (
+                      <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground md:text-base">
+                        {combo.descripcion}
+                      </p>
+                    ) : null}
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <a
+                        href={prefilledWhatsappUrl(combo.mensaje_whatsapp)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-a11y btn-a11y-secondary min-h-12 px-5 text-base"
+                      >
+                        Consultar por WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-5 pb-16 pt-10 md:pt-16">
         <div className="rounded-[2rem] border border-border/60 bg-background px-6 py-8 text-center shadow-sm md:px-8">

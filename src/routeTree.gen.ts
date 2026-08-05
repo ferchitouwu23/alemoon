@@ -19,6 +19,7 @@ import { Route as AdminPromocionesRouteImport } from './routes/admin.promociones
 import { Route as AdminProductosRouteImport } from './routes/admin.productos'
 import { Route as AdminOfertasRouteImport } from './routes/admin.ofertas'
 import { Route as AdminNuevoRouteImport } from './routes/admin.nuevo'
+import { Route as AdminCombosDestacadosRouteImport } from './routes/admin.combos-destacados'
 import { Route as AdminCategoriasRouteImport } from './routes/admin.categorias'
 import { Route as AdminEditarIdRouteImport } from './routes/admin.editar.$id'
 
@@ -72,6 +73,11 @@ const AdminNuevoRoute = AdminNuevoRouteImport.update({
   path: '/nuevo',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCombosDestacadosRoute = AdminCombosDestacadosRouteImport.update({
+  id: '/combos-destacados',
+  path: '/combos-destacados',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriasRoute = AdminCategoriasRouteImport.update({
   id: '/categorias',
   path: '/categorias',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/admin-login': typeof AdminLoginRoute
   '/catalogo': typeof CatalogoRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/combos-destacados': typeof AdminCombosDestacadosRoute
   '/admin/nuevo': typeof AdminNuevoRoute
   '/admin/ofertas': typeof AdminOfertasRoute
   '/admin/productos': typeof AdminProductosRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/admin-login': typeof AdminLoginRoute
   '/catalogo': typeof CatalogoRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/combos-destacados': typeof AdminCombosDestacadosRoute
   '/admin/nuevo': typeof AdminNuevoRoute
   '/admin/ofertas': typeof AdminOfertasRoute
   '/admin/productos': typeof AdminProductosRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/admin-login': typeof AdminLoginRoute
   '/catalogo': typeof CatalogoRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/combos-destacados': typeof AdminCombosDestacadosRoute
   '/admin/nuevo': typeof AdminNuevoRoute
   '/admin/ofertas': typeof AdminOfertasRoute
   '/admin/productos': typeof AdminProductosRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/catalogo'
     | '/admin/categorias'
+    | '/admin/combos-destacados'
     | '/admin/nuevo'
     | '/admin/ofertas'
     | '/admin/productos'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/catalogo'
     | '/admin/categorias'
+    | '/admin/combos-destacados'
     | '/admin/nuevo'
     | '/admin/ofertas'
     | '/admin/productos'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/admin-login'
     | '/catalogo'
     | '/admin/categorias'
+    | '/admin/combos-destacados'
     | '/admin/nuevo'
     | '/admin/ofertas'
     | '/admin/productos'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNuevoRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/combos-destacados': {
+      id: '/admin/combos-destacados'
+      path: '/combos-destacados'
+      fullPath: '/admin/combos-destacados'
+      preLoaderRoute: typeof AdminCombosDestacadosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categorias': {
       id: '/admin/categorias'
       path: '/categorias'
@@ -268,6 +287,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCategoriasRoute: typeof AdminCategoriasRoute
+  AdminCombosDestacadosRoute: typeof AdminCombosDestacadosRoute
   AdminNuevoRoute: typeof AdminNuevoRoute
   AdminOfertasRoute: typeof AdminOfertasRoute
   AdminProductosRoute: typeof AdminProductosRoute
@@ -278,6 +298,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriasRoute: AdminCategoriasRoute,
+  AdminCombosDestacadosRoute: AdminCombosDestacadosRoute,
   AdminNuevoRoute: AdminNuevoRoute,
   AdminOfertasRoute: AdminOfertasRoute,
   AdminProductosRoute: AdminProductosRoute,
