@@ -35,26 +35,26 @@ function AdminHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl md:text-4xl">Que quieres hacer?</h1>
-        <p className="mt-2 text-muted-foreground">Elige una opcion.</p>
+        <h1 className="font-display text-3xl md:text-4xl">¿Qué quieres hacer?</h1>
+        <p className="mt-2 text-muted-foreground">Elige una opción.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border-2 border-border bg-card p-5">
+        <div className="rounded-2xl border-2 border-border bg-card px-5 py-6">
           <p className="text-sm text-muted-foreground">Productos cargados</p>
-          <p className="mt-2 font-display text-4xl">{productos.length}</p>
+          <p className="mt-3 font-display text-4xl leading-none">{productos.length}</p>
         </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Categorias activas</p>
-          <p className="mt-2 font-display text-4xl">{categorias.length}</p>
+        <div className="rounded-2xl border-2 border-border bg-card px-5 py-6">
+          <p className="text-sm text-muted-foreground">Categorías activas</p>
+          <p className="mt-3 font-display text-4xl leading-none">{categorias.length}</p>
         </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-5">
+        <div className="rounded-2xl border-2 border-border bg-card px-5 py-6">
           <p className="text-sm text-muted-foreground">Productos visibles</p>
-          <p className="mt-2 font-display text-4xl">{visibles}</p>
+          <p className="mt-3 font-display text-4xl leading-none">{visibles}</p>
         </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-5">
+        <div className="rounded-2xl border-2 border-border bg-card px-5 py-6">
           <p className="text-sm text-muted-foreground">Agotados / ofertas</p>
-          <p className="mt-2 font-display text-4xl">
+          <p className="mt-3 font-display text-4xl leading-none">
             {agotados} / {ofertas}
           </p>
         </div>
@@ -71,10 +71,10 @@ function AdminHome() {
           <span>Ver ofertas activas</span>
         </Link>
         <Link to="/admin/categorias" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
-          <span>Categorias</span>
+          <span>Categorías</span>
         </Link>
         <Link to="/admin/promociones" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
-          <span>Imagenes destacadas</span>
+          <span>Imágenes destacadas</span>
         </Link>
       </div>
     </div>

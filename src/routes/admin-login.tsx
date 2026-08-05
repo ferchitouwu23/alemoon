@@ -42,7 +42,7 @@ function AdminLoginPage() {
 
       await refreshAuth();
 
-      toast.success("Sesion iniciada.");
+      toast.success("Sesión iniciada.");
 
       if (redirectTarget) {
         window.location.assign(redirectTarget);
@@ -50,7 +50,7 @@ function AdminLoginPage() {
         navigate({ to: "/admin", replace: true });
       }
     } catch (error: any) {
-      toast.error(error.message ?? "No se pudo iniciar sesion.");
+      toast.error(error.message ?? "No se pudo iniciar sesión.");
     } finally {
       setBusy(false);
     }
@@ -71,22 +71,16 @@ function AdminLoginPage() {
           <Link to="/" className="font-display text-3xl tracking-tight md:text-4xl">
             Alemoon
           </Link>
-          <p className="mt-2 text-muted-foreground">Inicia sesion para entrar al panel</p>
+          <p className="mt-2 text-muted-foreground">Inicia sesión para entrar al panel</p>
         </div>
 
         <div className="mb-4">
-          <Link
-            to="/"
-            className="btn-a11y btn-a11y-secondary w-full justify-center px-6"
-          >
+          <Link to="/" className="btn-a11y btn-a11y-secondary w-full justify-center px-6">
             Volver al sitio
           </Link>
         </div>
 
-        <form
-          onSubmit={submit}
-          className="space-y-5 rounded-2xl border-2 border-border bg-card p-6"
-        >
+        <form onSubmit={submit} className="space-y-5 rounded-2xl border-2 border-border bg-card p-6">
           <h1 className="font-display text-2xl">Acceso al panel</h1>
 
           <label className="block">

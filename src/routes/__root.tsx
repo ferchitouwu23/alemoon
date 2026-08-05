@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from '@vercel/analytics/react';
 import {
   Outlet,
   Link,
@@ -131,6 +132,7 @@ function RootComponent() {
         <Outlet />
         <Toaster position="top-center" richColors />
       </AuthProvider>
+      <Analytics />
     </QueryClientProvider>
   );
 }

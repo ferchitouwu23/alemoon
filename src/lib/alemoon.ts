@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from "uuid";
 
 export const WHATSAPP_NUMBER = "593990312477";
 export const STORE_NAME = "Alemoon";
@@ -59,7 +60,7 @@ export type Promocion = {
 export async function uploadProductImage(file: File, categoryName: string) {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const categoryFolder = sanitizeStorageSegment(categoryName || "sin-categoria");
-  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const fileName = `${uuidv4()}.${ext}`;
   const path = `${categoryFolder}/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
@@ -77,7 +78,7 @@ export async function uploadProductImage(file: File, categoryName: string) {
 
 export async function uploadPromotionImage(file: File) {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const fileName = `${uuidv4()}.${ext}`;
   const path = `promociones/${fileName}`;
 
   const { error: uploadError } = await supabase.storage

@@ -175,7 +175,6 @@ function CatalogoPage() {
 function ProductoCard({ p }: { p: Producto }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const precioMostrar = getPrecioActual(p);
-  const descripcionCorta = getDescripcionTarjeta(p.descripcion);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-lg">
@@ -206,9 +205,6 @@ function ProductoCard({ p }: { p: Producto }) {
         <div className="space-y-3 p-4">
           <div>
             <h3 className="truncate font-medium">{p.nombre}</h3>
-            {descripcionCorta && (
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{descripcionCorta}</p>
-            )}
           </div>
           <div className="flex items-baseline gap-2">
             {p.en_oferta && p.precio_oferta != null ? (
@@ -324,11 +320,4 @@ function ProductoCard({ p }: { p: Producto }) {
 
 function getPrecioActual(producto: Producto) {
   return producto.en_oferta && producto.precio_oferta != null ? producto.precio_oferta : producto.precio;
-}
-
-function getDescripcionTarjeta(descripcion: string | null) {
-  const limpia = descripcion?.trim();
-  if (!limpia) return null;
-  if (limpia.length <= 96) return limpia;
-  return `${limpia.slice(0, 93).trimEnd()}...`;
 }
