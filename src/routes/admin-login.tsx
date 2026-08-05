@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand-logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -68,8 +69,8 @@ function AdminLoginPage() {
     <div className="grid min-h-screen place-items-center bg-background px-5 py-10 text-foreground">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link to="/" className="font-display text-3xl tracking-tight md:text-4xl">
-            Alemoon
+          <Link to="/" className="inline-flex no-underline">
+            <BrandLogo textClassName="text-3xl md:text-4xl" className="justify-center" />
           </Link>
           <p className="mt-2 text-muted-foreground">Inicia sesión para entrar al panel</p>
         </div>

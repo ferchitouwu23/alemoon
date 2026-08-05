@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { supabase } from "@/integrations/supabase/client";
-import { STORE_NAME, formatPrice, whatsappUrl, type Categoria, type Producto } from "@/lib/alemoon";
+import { formatPrice, whatsappUrl, type Categoria, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/catalogo")({
   component: CatalogoPage,
@@ -71,8 +72,8 @@ function CatalogoPage() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="font-display text-2xl tracking-tight md:text-3xl">
-            {STORE_NAME}
+          <Link to="/" className="no-underline">
+            <BrandLogo textClassName="text-2xl md:text-3xl" />
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link to="/catalogo" className="hover:opacity-70">
@@ -161,7 +162,7 @@ function CatalogoPage() {
 
       <footer className="mt-8 border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-muted-foreground md:flex-row">
-          <div className="font-display text-lg text-foreground">{STORE_NAME}</div>
+          <BrandLogo textClassName="text-lg" iconClassName="h-9 w-9" className="gap-2.5" />
           <div>Pedidos por WhatsApp · +593 99 031 2477</div>
           <Link to="/admin" className="hover:text-foreground">
             Acceso al panel

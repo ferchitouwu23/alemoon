@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { BrandLogo } from "@/components/brand-logo";
 import { supabase } from "@/integrations/supabase/client";
-import { STORE_NAME, formatPrice, getProductDetailUrl, whatsappUrl, type Producto } from "@/lib/alemoon";
+import { formatPrice, getProductDetailUrl, whatsappUrl, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/producto/$id")({
   component: ProductoDetalle,
@@ -27,8 +28,8 @@ function ProductoDetalle() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-4 flex items-center justify-between">
-          <Link to="/" className="font-display text-2xl tracking-tight md:text-3xl">
-            {STORE_NAME}
+          <Link to="/" className="no-underline">
+            <BrandLogo textClassName="text-2xl md:text-3xl" />
           </Link>
           <Link to="/" className="text-sm underline underline-offset-4">← Volver al catálogo</Link>
         </div>

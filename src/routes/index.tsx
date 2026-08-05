@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { BrandLogo } from "@/components/brand-logo";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  STORE_NAME,
   prefilledWhatsappUrl,
   whatsappUrl,
   type ComboDestacado,
@@ -50,9 +50,9 @@ function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link
             to="/"
-            className="font-display text-2xl tracking-tight no-underline outline-none ring-0 shadow-none focus-visible:outline-none focus-visible:ring-0"
+            className="no-underline outline-none ring-0 shadow-none focus-visible:outline-none focus-visible:ring-0"
           >
-            {STORE_NAME}
+            <BrandLogo textClassName="text-2xl md:text-3xl" />
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link to="/catalogo" className="hover:opacity-70">
@@ -214,7 +214,7 @@ function Home() {
 
       <footer className="mt-8 border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-muted-foreground md:flex-row">
-          <div className="font-display text-lg text-foreground">{STORE_NAME}</div>
+          <BrandLogo textClassName="text-lg" iconClassName="h-9 w-9" className="gap-2.5" />
           <div>Pedidos por WhatsApp · +593 99 031 2477</div>
           <Link to="/admin" className="hover:text-foreground">
             Acceso al panel

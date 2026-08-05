@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand-logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -43,8 +44,8 @@ function AdminLayout() {
     <div className="min-h-screen bg-background text-lg text-foreground">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4 sm:px-5 md:flex-row md:items-center md:justify-between">
-          <Link to="/" className="font-display text-2xl tracking-tight md:text-3xl">
-            Alemoon
+          <Link to="/" className="no-underline">
+            <BrandLogo textClassName="text-2xl md:text-3xl" />
           </Link>
 
           <div className="grid w-full grid-cols-3 gap-2 md:flex md:w-auto md:items-center">
