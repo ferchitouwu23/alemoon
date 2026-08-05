@@ -3,10 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 export const WHATSAPP_NUMBER = "593990312477";
 export const STORE_NAME = "Alemoon";
 
-export function whatsappUrl(productName: string, price?: number | null) {
-  const priceTxt = price != null ? ` (precio: $${Number(price).toFixed(2)})` : "";
-  const msg = `Hola Alemoon, me interesa el producto: "${productName}"${priceTxt}. ¿Está disponible?`;
+export function whatsappUrl(productName: string, price?: number | null, productUrl?: string | null) {
+  const productTxt = productUrl ? ` Producto: ${productUrl}.` : "";
+  const priceTxt = price != null ? ` Precio: $${Number(price).toFixed(2)}.` : "";
+  const msg = `Hola Alemoon, me interesa: ${productName}.${productTxt}${priceTxt} ¿Está disponible?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+export function getProductDetailUrl(productId: string) {
+  const path = `/producto/${productId}`;
+  const siteUrl =
+    import.meta.env.VITE_SITE_URL ||
+    process.env.SITE_URL ||
+    process.env.PUBLIC_SITE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+
+  if (!siteUrl) return path;
+
+  try {
+    return new URL(path, siteUrl).toString();
+  } catch {
+    return path;
+  }
 }
 
 export function formatPrice(n: number | string | null | undefined) {
@@ -29,12 +47,38 @@ export type Producto = {
 };
 
 export type Categoria = { id: string; nombre: string };
+export type Promocion = {
+  id: string;
+  imagen_url: string;
+  titulo: string | null;
+  orden: number;
+  activo: boolean;
+  fecha_creacion: string;
+};
 
 export async function uploadProductImage(file: File, categoryName: string) {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const categoryFolder = sanitizeStorageSegment(categoryName || "sin-categoria");
   const fileName = `${crypto.randomUUID()}.${ext}`;
   const path = `${categoryFolder}/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("productos")
+    .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type || undefined });
+
+  if (uploadError) throw uploadError;
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("productos").getPublicUrl(path);
+
+  return publicUrl;
+}
+
+export async function uploadPromotionImage(file: File) {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const path = `promociones/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from("productos")

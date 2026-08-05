@@ -180,3 +180,25 @@
   background-color: oklch(0.55 0.19 27);
   color: white;
 }
+
+.alemoon-home-gradient {
+  position: relative;
+  isolation: isolate;
+}
+
+.alemoon-home-gradient::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgb(255 255 255 / 0.38) 0, rgb(255 255 255 / 0) 34%),
+    linear-gradient(
+      180deg,
+      oklch(0.968 0.004 140) 0%,
+      oklch(0.958 0.006 138) 26%,
+      oklch(0.944 0.008 132) 58%,
+      oklch(0.932 0.010 128) 100%
+    );
+}

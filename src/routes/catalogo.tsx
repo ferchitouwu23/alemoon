@@ -175,108 +175,147 @@ function CatalogoPage() {
 function ProductoCard({ p }: { p: Producto }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const precioMostrar = getPrecioActual(p);
-  const descripcionCorta = p.descripcion?.trim() || null;
+  const descripcionCorta = getDescripcionTarjeta(p.descripcion);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-lg">
-      <div className="group relative aspect-square [perspective:1200px]">
-        <div
-          className={`relative h-full w-full transition-transform duration-400 [transform-style:preserve-3d] ${
-            isFlipped ? "[transform:rotateY(180deg)]" : ""
-          } group-hover:[transform:rotateY(180deg)]`}
-        >
-          <button
-            type="button"
-            aria-label={isFlipped ? `Volver a la imagen de ${p.nombre}` : `Ver detalles de ${p.nombre}`}
-            onClick={() => setIsFlipped((current) => !current)}
-            className="absolute inset-0 block [backface-visibility:hidden]"
-          >
-            <div className="relative h-full w-full bg-[color:var(--alemoon-sage)]/40">
-              {p.imagen_url ? (
-                <img
-                  src={p.imagen_url}
-                  alt={p.nombre}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="grid h-full w-full place-items-center font-display text-2xl italic text-[color:var(--alemoon-charcoal)]">
-                  {p.nombre[0]}
-                </div>
-              )}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
-              <div className="absolute left-3 top-3 flex flex-col gap-2">
-                {p.en_oferta && (
-                  <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
-                    Oferta
-                  </span>
-                )}
-                {p.agotado && (
-                  <span className="rounded-full border border-white/40 bg-[color:var(--alemoon-ink)] px-3 py-1 text-xs font-semibold tracking-[0.2em] text-white">
-                    SOLD OUT
-                  </span>
-                )}
-              </div>
+      <div className="sm:hidden">
+        <div className="relative aspect-square overflow-hidden bg-[color:var(--alemoon-sage)]/40">
+          {p.imagen_url ? (
+            <img src={p.imagen_url} alt={p.nombre} className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div className="grid h-full w-full place-items-center font-display text-2xl italic text-[color:var(--alemoon-charcoal)]">
+              {p.nombre[0]}
             </div>
-          </button>
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+          <div className="absolute left-3 top-3 flex flex-col gap-2">
+            {p.en_oferta && (
+              <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                Oferta
+              </span>
+            )}
+            {p.agotado && (
+              <span className="rounded-full border border-white/40 bg-[color:var(--alemoon-ink)] px-3 py-1 text-xs font-semibold tracking-[0.2em] text-white">
+                SOLD OUT
+              </span>
+            )}
+          </div>
+        </div>
 
-          <div className="absolute inset-0 rounded-2xl bg-card p-4 text-left [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            <div className="flex h-full flex-col justify-between rounded-[1.2rem] border border-border/70 bg-background/75 p-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Detalles</p>
-                <h3 className="mt-2 font-display text-2xl leading-tight">{p.nombre}</h3>
-                {descripcionCorta && (
-                  <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
-                    {descripcionCorta}
-                  </p>
+        <div className="space-y-3 p-4">
+          <div>
+            <h3 className="truncate font-medium">{p.nombre}</h3>
+            {descripcionCorta && (
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{descripcionCorta}</p>
+            )}
+          </div>
+          <div className="flex items-baseline gap-2">
+            {p.en_oferta && p.precio_oferta != null ? (
+              <>
+                <span className="font-semibold">{formatPrice(p.precio_oferta)}</span>
+                <span className="text-sm text-muted-foreground line-through">
+                  {formatPrice(p.precio)}
+                </span>
+              </>
+            ) : (
+              <span className="font-semibold">{formatPrice(p.precio)}</span>
+            )}
+          </div>
+          <Link
+            to="/producto/$id"
+            params={{ id: p.id }}
+            className="btn-a11y btn-a11y-primary min-h-11 w-full px-4 py-3 text-base"
+          >
+            Ver producto
+          </Link>
+        </div>
+      </div>
+
+      <div className="hidden sm:block">
+        <div className="group relative aspect-square overflow-hidden [perspective:1200px]">
+          <div
+            className={`absolute inset-0 h-full w-full transition-transform duration-400 [transform-style:preserve-3d] ${
+              isFlipped ? "[transform:rotateY(180deg)]" : ""
+            } group-hover:[transform:rotateY(180deg)]`}
+          >
+            <button
+              type="button"
+              aria-label={isFlipped ? `Volver a la imagen de ${p.nombre}` : `Ver detalles de ${p.nombre}`}
+              onClick={() => setIsFlipped((current) => !current)}
+              className="absolute inset-0 block h-full w-full overflow-hidden [backface-visibility:hidden]"
+            >
+              <div className="relative h-full w-full bg-[color:var(--alemoon-sage)]/40">
+                {p.imagen_url ? (
+                  <img
+                    src={p.imagen_url}
+                    alt={p.nombre}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="grid h-full w-full place-items-center font-display text-2xl italic text-[color:var(--alemoon-charcoal)]">
+                    {p.nombre[0]}
+                  </div>
                 )}
-              </div>
-
-              <div className="mt-4">
-                <div className="mb-4 flex items-baseline gap-2">
-                  <span className="font-semibold">{formatPrice(precioMostrar)}</span>
-                  {p.en_oferta && p.precio_oferta != null && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      {formatPrice(p.precio)}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+                <div className="absolute left-3 top-3 flex flex-col gap-2">
+                  {p.en_oferta && (
+                    <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                      Oferta
+                    </span>
+                  )}
+                  {p.agotado && (
+                    <span className="rounded-full border border-white/40 bg-[color:var(--alemoon-ink)] px-3 py-1 text-xs font-semibold tracking-[0.2em] text-white">
+                      SOLD OUT
                     </span>
                   )}
                 </div>
-                <Link
-                  to="/producto/$id"
-                  params={{ id: p.id }}
-                  onClick={(event) => event.stopPropagation()}
-                  className="btn-a11y btn-a11y-primary min-h-11 w-full px-4 py-3 text-base"
-                >
-                  Ver producto
-                </Link>
-                <a
-                  href={whatsappUrl(p.nombre, precioMostrar)}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(event) => event.stopPropagation()}
-                  className="btn-a11y btn-a11y-secondary mt-3 min-h-11 w-full px-4 py-3 text-base"
-                >
-                  Preguntar por WhatsApp
-                </a>
+              </div>
+            </button>
+
+            <div className="absolute inset-0 h-full w-full overflow-hidden bg-card p-4 text-left [backface-visibility:hidden] [transform:rotateY(180deg)]">
+              <div className="flex h-full min-h-0 flex-col justify-between overflow-hidden rounded-[1.2rem] border border-border/70 bg-background/75 p-4">
+                <div className="min-h-0 overflow-hidden">
+                  <h3 className="font-display text-2xl leading-tight">{p.nombre}</h3>
+                </div>
+
+                <div className="mt-4 shrink-0">
+                  <div className="mb-4 flex items-baseline gap-2">
+                    <span className="font-semibold">{formatPrice(precioMostrar)}</span>
+                    {p.en_oferta && p.precio_oferta != null && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatPrice(p.precio)}
+                      </span>
+                    )}
+                  </div>
+                  <Link
+                    to="/producto/$id"
+                    params={{ id: p.id }}
+                    onClick={(event) => event.stopPropagation()}
+                    className="btn-a11y btn-a11y-primary min-h-11 w-full px-4 py-3 text-base"
+                  >
+                    Ver producto
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="p-4">
-        <h3 className="truncate font-medium">{p.nombre}</h3>
-        <div className="mt-1 flex items-baseline gap-2">
-          {p.en_oferta && p.precio_oferta != null ? (
-            <>
-              <span className="font-semibold">{formatPrice(p.precio_oferta)}</span>
-              <span className="text-sm text-muted-foreground line-through">
-                {formatPrice(p.precio)}
-              </span>
-            </>
-          ) : (
-            <span className="font-semibold">{formatPrice(p.precio)}</span>
-          )}
+        <div className="p-4">
+          <h3 className="truncate font-medium">{p.nombre}</h3>
+          <div className="mt-1 flex items-baseline gap-2">
+            {p.en_oferta && p.precio_oferta != null ? (
+              <>
+                <span className="font-semibold">{formatPrice(p.precio_oferta)}</span>
+                <span className="text-sm text-muted-foreground line-through">
+                  {formatPrice(p.precio)}
+                </span>
+              </>
+            ) : (
+              <span className="font-semibold">{formatPrice(p.precio)}</span>
+            )}
+          </div>
         </div>
       </div>
     </article>
@@ -285,4 +324,11 @@ function ProductoCard({ p }: { p: Producto }) {
 
 function getPrecioActual(producto: Producto) {
   return producto.en_oferta && producto.precio_oferta != null ? producto.precio_oferta : producto.precio;
+}
+
+function getDescripcionTarjeta(descripcion: string | null) {
+  const limpia = descripcion?.trim();
+  if (!limpia) return null;
+  if (limpia.length <= 96) return limpia;
+  return `${limpia.slice(0, 93).trimEnd()}...`;
 }

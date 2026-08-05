@@ -35,8 +35,8 @@ function AdminHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl md:text-4xl">¿Qué quieres hacer?</h1>
-        <p className="mt-2 text-muted-foreground">Elige una opción.</p>
+        <h1 className="font-display text-3xl md:text-4xl">Que quieres hacer?</h1>
+        <p className="mt-2 text-muted-foreground">Elige una opcion.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -71,7 +71,10 @@ function AdminHome() {
           <span>Ver ofertas activas</span>
         </Link>
         <Link to="/admin/categorias" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
-          <span>Categorías</span>
+          <span>Categorias</span>
+        </Link>
+        <Link to="/admin/promociones" className="btn-a11y btn-a11y-secondary w-full justify-start px-6">
+          <span>Imagenes destacadas</span>
         </Link>
       </div>
     </div>

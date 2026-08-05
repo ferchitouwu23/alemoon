@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { STORE_NAME, formatPrice, whatsappUrl, type Producto } from "@/lib/alemoon";
+import { STORE_NAME, formatPrice, getProductDetailUrl, whatsappUrl, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/producto/$id")({
   component: ProductoDetalle,
@@ -76,7 +76,11 @@ function ProductoDetalle() {
                 </p>
               )}
               <a
-                href={whatsappUrl(data.nombre, data.en_oferta ? data.precio_oferta : data.precio)}
+                href={whatsappUrl(
+                  data.nombre,
+                  data.en_oferta ? data.precio_oferta : data.precio,
+                  getProductDetailUrl(data.id),
+                )}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-a11y btn-a11y-primary mt-8 w-full md:w-auto"

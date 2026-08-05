@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { STORE_NAME, whatsappUrl } from "@/lib/alemoon";
-import { promoCombos, promoHeroImages } from "@/lib/promo-gallery";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { STORE_NAME, whatsappUrl, type Promocion } from "@/lib/alemoon";
+import { promoCombos } from "@/lib/promo-gallery";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -8,9 +10,24 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const combosPreview = promoCombos.slice(0, 2);
+  const { data: promociones = [] } = useQuery({
+    queryKey: ["home-promociones"],
+    queryFn: async (): Promise<Promocion[]> => {
+      const { data, error } = await supabase
+        .from("promociones")
+        .select("id, imagen_url, titulo, orden, activo, fecha_creacion")
+        .eq("activo", true)
+        .order("orden", { ascending: true })
+        .order("fecha_creacion", { ascending: true });
+
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const heroPromotions = promociones.slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="alemoon-home-gradient min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link
@@ -30,8 +47,12 @@ function Home() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-6xl gap-12 px-5 py-18 md:py-28 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
+      <section
+        className={`mx-auto grid max-w-6xl gap-12 px-5 py-18 md:py-28 lg:items-center ${
+          heroPromotions.length > 0 ? "lg:grid-cols-[1.1fr_0.9fr]" : ""
+        }`}
+      >
+        <div className="flex flex-col justify-center lg:min-h-[42rem] lg:py-8">
           <p className="mb-4 text-xs uppercase tracking-[0.25em] text-muted-foreground">
             Bisuteria hecha a mano
           </p>
@@ -57,12 +78,17 @@ function Home() {
               Escribir por WhatsApp
             </a>
           </div>
+          <p className="mt-8 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Encuentra piezas listas para regalar, combinar o pedir por encargo desde el catalogo
+            completo, con atencion directa por WhatsApp cuando quieras asesoramiento.
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:gap-5">
-          {promoHeroImages.map((image, index) => (
+        {heroPromotions.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 md:gap-5">
+            {heroPromotions.map((promocion, index) => (
             <div
-              key={image}
+              key={promocion.id}
               className={`group relative overflow-hidden border border-border/40 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 index === 0
                   ? "col-span-2 aspect-[4/3] rounded-[2rem]"
@@ -70,14 +96,15 @@ function Home() {
               }`}
             >
               <img
-                src={image}
-                alt={`Coleccion Alemoon ${index + 1}`}
+                src={promocion.imagen_url}
+                alt={promocion.titulo?.trim() || `Promocion Alemoon ${index + 1}`}
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
                 loading={index === 0 ? "eager" : "lazy"}
               />
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="border-y border-border/50 bg-muted/40">

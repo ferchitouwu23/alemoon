@@ -100,6 +100,33 @@ export type Database = {
           },
         ]
       }
+      promociones: {
+        Row: {
+          activo: boolean
+          fecha_creacion: string
+          id: string
+          imagen_url: string
+          orden: number
+          titulo: string | null
+        }
+        Insert: {
+          activo?: boolean
+          fecha_creacion?: string
+          id?: string
+          imagen_url: string
+          orden?: number
+          titulo?: string | null
+        }
+        Update: {
+          activo?: boolean
+          fecha_creacion?: string
+          id?: string
+          imagen_url?: string
+          orden?: number
+          titulo?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
