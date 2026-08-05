@@ -67,7 +67,7 @@ function AdminLayout() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success("Sesión cerrada.");
+                toast.success("Sesion cerrada.");
                 navigate({ to: "/admin-login", replace: true });
               }}
               className="rounded-xl border-2 border-border bg-background px-2 py-2 text-center text-xs font-semibold leading-tight whitespace-nowrap hover:bg-muted sm:px-3 sm:text-sm md:px-4 md:py-3 md:text-base"
@@ -78,8 +78,8 @@ function AdminLayout() {
         </div>
 
         <div className="mx-auto max-w-3xl px-4 pb-3 text-sm text-muted-foreground sm:px-5">
-          Sesión: {user.email} - Rol:{" "}
-          <strong className="text-foreground">{role === "dueño" ? "Dueño" : "Gestora"}</strong>
+          Sesion: {user.email} - Rol:{" "}
+          <strong className="text-foreground">{role === "due\u00F1o" ? "Dueño" : "Gestora"}</strong>
         </div>
       </header>
 

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "dueño" | "gestora" | null;
+export type AppRole = "due\u00F1o" | "gestora" | null;
 
 type Perfil = {
   id: string;
@@ -82,14 +82,14 @@ function useProvideAuth(): AuthContextValue {
       return nextSession;
     };
 
-    const refreshAuth = async () => {
+    const refreshInitialAuth = async () => {
       const {
         data: { session: latestSession },
       } = await supabase.auth.getSession();
       return syncSession(latestSession);
     };
 
-    void refreshAuth();
+    void refreshInitialAuth();
 
     const {
       data: { subscription },
