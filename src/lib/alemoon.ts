@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 
 export const WHATSAPP_NUMBER = "593989303761";
 export const STORE_NAME = "Alemoon";
+export const WHATSAPP_DISPLAY = "+593 98 930 3761";
+export const FACEBOOK_URL = "https://www.facebook.com/alemoon.ec";
+export const INSTAGRAM_URL = "https://www.instagram.com/alemoon.ec?igsh=MWY4cHVkc2gzNjhzOA==";
 
 export function prefilledWhatsappUrl(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;

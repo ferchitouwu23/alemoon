@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BrandLogo } from "@/components/brand-logo";
+import { SocialLinks } from "@/components/social-links";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  WHATSAPP_DISPLAY,
   prefilledWhatsappUrl,
   whatsappUrl,
   type ComboDestacado,
@@ -28,12 +30,15 @@ function Home() {
       return data ?? [];
     },
   });
+
   const { data: combosDestacados = [] } = useQuery({
     queryKey: ["home-combos-destacados"],
     queryFn: async (): Promise<ComboDestacado[]> => {
       const { data, error } = await supabase
         .from("combos_destacados")
-        .select("id, imagen_url, etiqueta, titulo, descripcion, mensaje_whatsapp, orden, activo, fecha_creacion")
+        .select(
+          "id, imagen_url, etiqueta, titulo, descripcion, mensaje_whatsapp, orden, activo, fecha_creacion",
+        )
         .eq("activo", true)
         .order("orden", { ascending: true })
         .order("fecha_creacion", { ascending: true });
@@ -42,6 +47,7 @@ function Home() {
       return data ?? [];
     },
   });
+
   const heroPromotions = promociones.slice(0, 3);
 
   return (
@@ -105,21 +111,21 @@ function Home() {
         {heroPromotions.length > 0 && (
           <div className="grid grid-cols-2 gap-4 md:gap-5">
             {heroPromotions.map((promocion, index) => (
-            <div
-              key={promocion.id}
-              className={`group relative overflow-hidden border border-border/40 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                index === 0
-                  ? "col-span-2 aspect-[4/3] rounded-[2rem]"
-                  : "aspect-square rounded-[1.5rem]"
-              }`}
-            >
-              <img
-                src={promocion.imagen_url}
-                alt={promocion.titulo?.trim() || `Promocion Alemoon ${index + 1}`}
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                loading={index === 0 ? "eager" : "lazy"}
-              />
-            </div>
+              <div
+                key={promocion.id}
+                className={`group relative overflow-hidden border border-border/40 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                  index === 0
+                    ? "col-span-2 aspect-[4/3] rounded-[2rem]"
+                    : "aspect-square rounded-[1.5rem]"
+                }`}
+              >
+                <img
+                  src={promocion.imagen_url}
+                  alt={promocion.titulo?.trim() || `Promocion Alemoon ${index + 1}`}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -215,10 +221,13 @@ function Home() {
       <footer className="mt-8 border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-muted-foreground md:flex-row">
           <BrandLogo textClassName="text-lg" iconClassName="h-9 w-9" className="gap-2.5" />
-          <div>Pedidos por WhatsApp · +593 99 031 2477</div>
-          <Link to="/admin" className="hover:text-foreground">
-            Acceso al panel
-          </Link>
+          <div className="flex flex-col items-center gap-3 text-center md:items-end md:text-right">
+            <div>Pedidos por WhatsApp · {WHATSAPP_DISPLAY}</div>
+            <SocialLinks />
+            <Link to="/admin" className="hover:text-foreground">
+              Acceso al panel
+            </Link>
+          </div>
         </div>
       </footer>
     </main>

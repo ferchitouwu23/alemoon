@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { SocialLinks } from "@/components/social-links";
 import { supabase } from "@/integrations/supabase/client";
-import { formatPrice, whatsappUrl, type Categoria, type Producto } from "@/lib/alemoon";
+import { WHATSAPP_DISPLAY, formatPrice, type Categoria, type Producto } from "@/lib/alemoon";
 
 export const Route = createFileRoute("/catalogo")({
   component: CatalogoPage,
@@ -163,10 +164,13 @@ function CatalogoPage() {
       <footer className="mt-8 border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-muted-foreground md:flex-row">
           <BrandLogo textClassName="text-lg" iconClassName="h-9 w-9" className="gap-2.5" />
-          <div>Pedidos por WhatsApp · +593 99 031 2477</div>
-          <Link to="/admin" className="hover:text-foreground">
-            Acceso al panel
-          </Link>
+          <div className="flex flex-col items-center gap-3 text-center md:items-end md:text-right">
+            <div>Pedidos por WhatsApp · {WHATSAPP_DISPLAY}</div>
+            <SocialLinks />
+            <Link to="/admin" className="hover:text-foreground">
+              Acceso al panel
+            </Link>
+          </div>
         </div>
       </footer>
     </main>
