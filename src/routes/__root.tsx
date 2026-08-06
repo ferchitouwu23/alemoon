@@ -9,7 +9,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -114,11 +113,6 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var key="alemoon-theme";var saved=localStorage.getItem(key);var prefersDark=window.matchMedia("(prefers-color-scheme: dark)").matches;var theme=saved==="dark"||saved==="light"?saved:(prefersDark?"dark":"light");if(theme==="dark"){document.documentElement.classList.add("dark");}else{document.documentElement.classList.remove("dark");}}catch(e){}})();`,
-          }}
-        />
         <HeadContent />
       </head>
       <body>
@@ -137,9 +131,6 @@ function RootComponent() {
       <AuthProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        <div className="fixed bottom-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
         <Toaster position="top-center" richColors />
       </AuthProvider>
       <Analytics />
